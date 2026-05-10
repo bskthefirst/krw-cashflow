@@ -4,10 +4,15 @@ import { AppShell } from './components/AppShell'
 import { DashboardPage } from './pages/DashboardPage'
 import { AssetsPage } from './pages/AssetsPage'
 
+function routerBasename(): string | undefined {
+  const b = import.meta.env.BASE_URL.replace(/\/$/, '')
+  return b === '' ? undefined : b
+}
+
 export default function App() {
   return (
     <PortfolioProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={routerBasename()}>
         <Routes>
           <Route element={<AppShell />}>
             <Route index element={<DashboardPage />} />
