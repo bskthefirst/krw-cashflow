@@ -111,6 +111,8 @@ export function GpixHypoSection({
   const [refreshing, setRefreshing] = useState(false)
   const [focus, setFocus] = useState<HypoFocus>(() => loadFocus())
   const [hypo, setHypo] = useState<HypoPersist>(() => loadHypo())
+  const [gpixSharesDraft, setGpixSharesDraft] = useState('')
+  const [gpiqSharesDraft, setGpiqSharesDraft] = useState('')
 
   useEffect(() => {
     try {
@@ -133,15 +135,33 @@ export function GpixHypoSection({
     [gpixGpiqMonthlyAfterTax, gpixBookKrw, gpiqBookKrw],
   )
 
-  const applyPrices = useCallback((payload: EtfPricesPayload | null) => {
-    if (!payload) {
-      setPriceFailed(true)
-      setEtf(null)
-      return
-    }
-    setPriceFailed(false)
-    setEtf(payload)
-  }, [])
+  const applyPrices = useCallback(
+    (payload: EtfPricesPayload | null) => {
+      if (!payload) {
+        setPriceFailed(true)
+        setEtf(null)
+        return
+      }
+      setPriceFailed(false)
+      setEtf(payload)
+
+      const gpixShares = num(gpixSharesDraft)
+      const gpiqShares = num(gpiqSharesDraft)
+      if (gpixShares <= 0 && gpiqShares <= 0) return
+      setHypo((h) => ({
+        ...h,
+        extraGpixKrw:
+          gpixShares > 0 && payload.quotes.GPIX.krwPerShare > 0
+            ? gpixShares * payload.quotes.GPIX.krwPerShare
+            : h.extraGpixKrw,
+        extraGpiqKrw:
+          gpiqShares > 0 && payload.quotes.GPIQ.krwPerShare > 0
+            ? gpiqShares * payload.quotes.GPIQ.krwPerShare
+            : h.extraGpiqKrw,
+      }))
+    },
+    [gpixSharesDraft, gpiqSharesDraft],
+  )
 
   const refreshPrices = useCallback(async () => {
     setRefreshing(true)
@@ -416,6 +436,21 @@ export function GpixHypoSection({
                 setHypo((h) => ({ ...h, extraGpixKrw: num(e.target.value) }))
               }
             />
+            {gpix && gpix.krwPerShare > 0 && (
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => {
+                  setHypo((h) => ({ ...h, extraGpixKrw: h.extraGpixKrw + gpix.krwPerShare }))
+                  setGpixSharesDraft((prev) => {
+                    const current = num(prev)
+                    return String((current > 0 ? current : 0) + 1)
+                  })
+                }}
+              >
+                +1주
+              </button>
+            )}
             {hypo.extraGpixKrw > 0 && gpixBookKrw <= 0 && (
               <small className="field__meta hypo-calc__field-warn">
                 위 «GPIX 매수·장부 금액»을 넣어야 예측이 나옵니다.
@@ -462,18 +497,18 @@ export function GpixHypoSection({
                 min={0}
                 step="any"
                 placeholder={gpix ? `참고 주당 ${formatKrw(gpix.krwPerShare, 0)}` : ''}
-                value={
-                  gpix && gpix.krwPerShare > 0 && hypo.extraGpixKrw > 0
-                    ? hypo.extraGpixKrw / gpix.krwPerShare
-                    : ''
-                }
+                value={gpixSharesDraft}
                 onChange={(e) => {
-                  const v = num(e.target.value)
-                  if (e.target.value === '' || v === 0) {
+                  const raw = e.target.value
+                  setGpixSharesDraft(raw)
+                  const v = num(raw)
+                  if (raw === '' || v === 0) {
                     setHypo((h) => ({ ...h, extraGpixKrw: 0 }))
                     return
                   }
-                  setExtraGpixFromShares(v)
+                  if (gpix && gpix.krwPerShare > 0) {
+                    setExtraGpixFromShares(v)
+                  }
                 }}
               />
             </label>
@@ -487,18 +522,18 @@ export function GpixHypoSection({
                 min={0}
                 step="any"
                 placeholder={gpiq ? `참고 주당 ${formatKrw(gpiq.krwPerShare, 0)}` : ''}
-                value={
-                  gpiq && gpiq.krwPerShare > 0 && hypo.extraGpiqKrw > 0
-                    ? hypo.extraGpiqKrw / gpiq.krwPerShare
-                    : ''
-                }
+                value={gpiqSharesDraft}
                 onChange={(e) => {
-                  const v = num(e.target.value)
-                  if (e.target.value === '' || v === 0) {
+                  const raw = e.target.value
+                  setGpiqSharesDraft(raw)
+                  const v = num(raw)
+                  if (raw === '' || v === 0) {
                     setHypo((h) => ({ ...h, extraGpiqKrw: 0 }))
                     return
                   }
-                  setExtraGpiqFromShares(v)
+                  if (gpiq && gpiq.krwPerShare > 0) {
+                    setExtraGpiqFromShares(v)
+                  }
                 }}
               />
             </label>
