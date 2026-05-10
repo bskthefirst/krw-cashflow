@@ -319,6 +319,56 @@
   width: 2.65rem;
 }
 
+.monthly-trend__caption-wink {
+  display: inline-block;
+  animation: monthlyTrendWink 2.4s ease-in-out infinite;
+}
+
+@keyframes monthlyTrendWink {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.85;
+  }
+  35% {
+    transform: rotate(-14deg) scale(1.05);
+    opacity: 1;
+  }
+  55% {
+    transform: rotate(10deg) scale(1.05);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .monthly-trend__caption-wink {
+    animation: none;
+  }
+}
+
+.monthly-trend__hit {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  width: 100%;
+  cursor: pointer;
+  display: block;
+  border-radius: 12px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transform-origin: center bottom;
+}
+
+.monthly-trend__hit:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 55%, transparent);
+  outline-offset: 3px;
+}
+
+.monthly-trend__hit:active .monthly-trend__track-v {
+  filter: brightness(0.97);
+}
+
 .monthly-trend__track-v {
   width: 100%;
   height: 196px;
