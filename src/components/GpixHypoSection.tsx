@@ -113,6 +113,13 @@ export function GpixHypoSection({
   const [hypo, setHypo] = useState<HypoPersist>(() => loadHypo())
   const [gpixSharesDraft, setGpixSharesDraft] = useState('')
   const [gpiqSharesDraft, setGpiqSharesDraft] = useState('')
+  const gpixSharesDraftRef = useRef('')
+  const gpiqSharesDraftRef = useRef('')
+
+  useLayoutEffect(() => {
+    gpixSharesDraftRef.current = gpixSharesDraft
+    gpiqSharesDraftRef.current = gpiqSharesDraft
+  }, [gpixSharesDraft, gpiqSharesDraft])
 
   useEffect(() => {
     try {
@@ -135,33 +142,32 @@ export function GpixHypoSection({
     [gpixGpiqMonthlyAfterTax, gpixBookKrw, gpiqBookKrw],
   )
 
-  const applyPrices = useCallback(
-    (payload: EtfPricesPayload | null) => {
-      if (!payload) {
-        setPriceFailed(true)
-        setEtf(null)
-        return
-      }
-      setPriceFailed(false)
-      setEtf(payload)
+  const applyPrices = useCallback((payload: EtfPricesPayload | null) => {
+    if (!payload) {
+      setPriceFailed(true)
+      setEtf(null)
+      return
+    }
+    setPriceFailed(false)
+    setEtf(payload)
 
-      const gpixShares = num(gpixSharesDraft)
-      const gpiqShares = num(gpiqSharesDraft)
-      if (gpixShares <= 0 && gpiqShares <= 0) return
-      setHypo((h) => ({
-        ...h,
-        extraGpixKrw:
-          gpixShares > 0 && payload.quotes.GPIX.krwPerShare > 0
-            ? gpixShares * payload.quotes.GPIX.krwPerShare
-            : h.extraGpixKrw,
-        extraGpiqKrw:
-          gpiqShares > 0 && payload.quotes.GPIQ.krwPerShare > 0
-            ? gpiqShares * payload.quotes.GPIQ.krwPerShare
-            : h.extraGpiqKrw,
-      }))
-    },
-    [gpixSharesDraft, gpiqSharesDraft],
-  )
+    const gpixQuote = payload.quotes.GPIX
+    const gpiqQuote = payload.quotes.GPIQ
+    const gpixShares = num(gpixSharesDraftRef.current)
+    const gpiqShares = num(gpiqSharesDraftRef.current)
+    if (gpixShares <= 0 && gpiqShares <= 0) return
+    setHypo((h) => ({
+      ...h,
+      extraGpixKrw:
+        gpixShares > 0 && gpixQuote && gpixQuote.krwPerShare > 0
+          ? gpixShares * gpixQuote.krwPerShare
+          : h.extraGpixKrw,
+      extraGpiqKrw:
+        gpiqShares > 0 && gpiqQuote && gpiqQuote.krwPerShare > 0
+          ? gpiqShares * gpiqQuote.krwPerShare
+          : h.extraGpiqKrw,
+    }))
+  }, [])
 
   const refreshPrices = useCallback(async () => {
     setRefreshing(true)
@@ -240,6 +246,24 @@ export function GpixHypoSection({
       (focus === 'both' && extraTotal > 0 && hasBookForExtra))
 
   const highlightRef = useRef<HTMLParagraphElement>(null)
+
+  const bothForecastBreak = useMemo(() => {
+    const parts: string[] = []
+    if (hypo.extraGpixKrw > 0 && gpixBookKrw > 0) {
+      parts.push(`GPIX +${formatKrw(Math.round(separateExtra.fromGpix))}`)
+    }
+    if (hypo.extraGpiqKrw > 0 && gpiqBookKrw > 0) {
+      parts.push(`GPIQ +${formatKrw(Math.round(separateExtra.fromGpiq))}`)
+    }
+    return parts.join(' · ')
+  }, [
+    hypo.extraGpixKrw,
+    hypo.extraGpiqKrw,
+    gpixBookKrw,
+    gpiqBookKrw,
+    separateExtra.fromGpix,
+    separateExtra.fromGpiq,
+  ])
 
   useLayoutEffect(() => {
     const el = highlightRef.current
@@ -426,31 +450,37 @@ export function GpixHypoSection({
         {showGpix && (
           <label className="field hypo-field">
             <span>GPIX 더 살 금액</span>
-            <input
-              type="number"
-              inputMode="decimal"
-              min={0}
-              step={10000}
-              value={hypo.extraGpixKrw}
-              onChange={(e) =>
-                setHypo((h) => ({ ...h, extraGpixKrw: num(e.target.value) }))
-              }
-            />
-            {gpix && gpix.krwPerShare > 0 && (
-              <button
-                type="button"
-                className="btn btn--ghost"
-                onClick={() => {
-                  setHypo((h) => ({ ...h, extraGpixKrw: h.extraGpixKrw + gpix.krwPerShare }))
-                  setGpixSharesDraft((prev) => {
-                    const current = num(prev)
-                    return String((current > 0 ? current : 0) + 1)
-                  })
+            <div className="hypo-field__row">
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step={10000}
+                value={hypo.extraGpixKrw}
+                onChange={(e) => {
+                  setGpixSharesDraft('')
+                  setHypo((h) => ({ ...h, extraGpixKrw: num(e.target.value) }))
                 }}
-              >
-                +1주
-              </button>
-            )}
+              />
+              {gpix && gpix.krwPerShare > 0 && (
+                <button
+                  type="button"
+                  className="btn btn--ghost hypo-field__chip"
+                  onClick={() => {
+                    setHypo((h) => ({
+                      ...h,
+                      extraGpixKrw: h.extraGpixKrw + gpix.krwPerShare,
+                    }))
+                    setGpixSharesDraft((prev) => {
+                      const current = num(prev)
+                      return String((current > 0 ? current : 0) + 1)
+                    })
+                  }}
+                >
+                  +1주
+                </button>
+              )}
+            </div>
             {hypo.extraGpixKrw > 0 && gpixBookKrw <= 0 && (
               <small className="field__meta hypo-calc__field-warn">
                 위 «GPIX 매수·장부 금액»을 넣어야 예측이 나옵니다.
@@ -465,16 +495,37 @@ export function GpixHypoSection({
         {showGpiq && (
           <label className="field hypo-field">
             <span>GPIQ 더 살 금액</span>
-            <input
-              type="number"
-              inputMode="decimal"
-              min={0}
-              step={10000}
-              value={hypo.extraGpiqKrw}
-              onChange={(e) =>
-                setHypo((h) => ({ ...h, extraGpiqKrw: num(e.target.value) }))
-              }
-            />
+            <div className="hypo-field__row">
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step={10000}
+                value={hypo.extraGpiqKrw}
+                onChange={(e) => {
+                  setGpiqSharesDraft('')
+                  setHypo((h) => ({ ...h, extraGpiqKrw: num(e.target.value) }))
+                }}
+              />
+              {gpiq && gpiq.krwPerShare > 0 && (
+                <button
+                  type="button"
+                  className="btn btn--ghost hypo-field__chip"
+                  onClick={() => {
+                    setHypo((h) => ({
+                      ...h,
+                      extraGpiqKrw: h.extraGpiqKrw + gpiq.krwPerShare,
+                    }))
+                    setGpiqSharesDraft((prev) => {
+                      const current = num(prev)
+                      return String((current > 0 ? current : 0) + 1)
+                    })
+                  }}
+                >
+                  +1주
+                </button>
+              )}
+            </div>
             {hypo.extraGpiqKrw > 0 && gpiqBookKrw <= 0 && (
               <small className="field__meta hypo-calc__field-warn">
                 위 «GPIQ 매수·장부 금액»을 넣어야 예측이 나옵니다.
@@ -556,14 +607,9 @@ export function GpixHypoSection({
               >
                 {focus === 'both' ? (
                   <>
-                    <span className="hypo-calc__forecast-break">
-                      {hypo.extraGpixKrw > 0 && gpixBookKrw > 0 && (
-                        <span>GPIX +{formatKrw(Math.round(separateExtra.fromGpix))} · </span>
-                      )}
-                      {hypo.extraGpiqKrw > 0 && gpiqBookKrw > 0 && (
-                        <span>GPIQ +{formatKrw(Math.round(separateExtra.fromGpiq))}</span>
-                      )}
-                    </span>
+                    {bothForecastBreak ? (
+                      <span className="hypo-calc__forecast-break">{bothForecastBreak}</span>
+                    ) : null}
                     <span className="hypo-calc__forecast-total">
                       합계 <strong>{formatKrw(Math.round(separateExtra.total))}</strong>
                     </span>

@@ -1035,6 +1035,26 @@
   margin-top: 1rem;
 }
 
+/* KRW row + +1주 chip (GPIX / GPIQ hypo) */
+.hypo-field__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hypo-field__row > input {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.hypo-field__chip {
+  flex-shrink: 0;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
 .hypo-calc__buy-heading {
   margin: 1rem 0 0.65rem;
   font-size: 0.95rem;

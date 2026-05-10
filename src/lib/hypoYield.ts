@@ -78,14 +78,17 @@ export function extraMonthlyAfterTaxSeparate(params: {
     extraGpiqKrw,
   } = params
 
+  const xG = Number.isFinite(extraGpixKrw) ? Math.max(0, extraGpixKrw) : 0
+  const xQ = Number.isFinite(extraGpiqKrw) ? Math.max(0, extraGpiqKrw) : 0
+
   let fromGpix = 0
-  if (gpixBookKrw > 0 && Number.isFinite(gpixMonthlyAfterTax) && Number.isFinite(extraGpixKrw)) {
-    fromGpix = (gpixMonthlyAfterTax / gpixBookKrw) * extraGpixKrw
+  if (gpixBookKrw > 0 && Number.isFinite(gpixMonthlyAfterTax)) {
+    fromGpix = (gpixMonthlyAfterTax / gpixBookKrw) * xG
   }
 
   let fromGpiq = 0
-  if (gpiqBookKrw > 0 && Number.isFinite(gpiqMonthlyAfterTax) && Number.isFinite(extraGpiqKrw)) {
-    fromGpiq = (gpiqMonthlyAfterTax / gpiqBookKrw) * extraGpiqKrw
+  if (gpiqBookKrw > 0 && Number.isFinite(gpiqMonthlyAfterTax)) {
+    fromGpiq = (gpiqMonthlyAfterTax / gpiqBookKrw) * xQ
   }
 
   return {

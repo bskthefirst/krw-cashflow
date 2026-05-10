@@ -97,4 +97,17 @@ describe('extraMonthlyAfterTaxSeparate', () => {
     expect(r.fromGpix).toBe(0)
     expect(r.fromGpiq).toBeCloseTo(200, 8)
   })
+
+  it('ignores negative extra buy (clamped to zero)', () => {
+    const r = extraMonthlyAfterTaxSeparate({
+      gpixMonthlyAfterTax: 4000,
+      gpiqMonthlyAfterTax: 5000,
+      gpixBookKrw: 20_000_000,
+      gpiqBookKrw: 20_000_000,
+      extraGpixKrw: -1_000_000,
+      extraGpiqKrw: 1_000_000,
+    })
+    expect(r.fromGpix).toBe(0)
+    expect(r.fromGpiq).toBeCloseTo(250, 8)
+  })
 })
