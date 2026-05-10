@@ -1,6 +1,7 @@
 import { MetricCard } from '../components/MetricCard'
 import { MonthlyTrend } from '../components/MonthlyTrend'
 import { usePortfolio } from '../context/usePortfolio'
+import { animateDelayMs } from '../lib/animStyle'
 import {
   buildMonthlyProjection,
   currentMonthMetrics,
@@ -18,7 +19,7 @@ export function DashboardPage() {
 
   return (
     <div className="page dashboard">
-      <header className="page__hero">
+      <header className="page__hero animate__animated animate__fadeInDown animate__faster">
         <h1 className="page__title">순현금 대시보드</h1>
         <p className="page__subtitle">
           이번 달 기준 세후 순현금 (KRW). 자산 입력에서 숫자를 바꾸면 즉시
@@ -31,27 +32,34 @@ export function DashboardPage() {
           label="이번 달 순현금 (월)"
           value={formatKrw(now.monthlyTotal)}
           hint={`${now.daysInMonth}일 기준`}
+          delayMs={40}
         />
         <MetricCard
           label="순현금 (일 평균)"
           value={formatKrw(now.totalPureDaily)}
           hint="CMA + ETH 일당 + GPIX/GPIQ 일할"
+          delayMs={110}
         />
         <MetricCard
           label="24개월 합계"
           value={formatKrw(sum24)}
           hint="예측 시작월부터 24개월"
+          delayMs={180}
         />
         <MetricCard
           label="24개월 월평균"
           value={formatKrw(avgMonthly)}
+          delayMs={250}
         />
       </section>
 
       <section className="dashboard__breakdown">
         <h2 className="section-title">이번 달 구성</h2>
         <div className="breakdown-grid">
-          <div className="breakdown-item">
+          <div
+            className="breakdown-item animate__animated animate__fadeInUp animate__faster"
+            style={animateDelayMs(60)}
+          >
             <span className="breakdown-item__name">CMA (월)</span>
             <span className="breakdown-item__val">
               {formatKrw(now.cmaPureMonthly)}
@@ -60,7 +68,10 @@ export function DashboardPage() {
               일 {formatKrw(cmaPureDay)} · 세후
             </span>
           </div>
-          <div className="breakdown-item">
+          <div
+            className="breakdown-item animate__animated animate__fadeInUp animate__faster"
+            style={animateDelayMs(130)}
+          >
             <span className="breakdown-item__name">ETH (월)</span>
             <span className="breakdown-item__val">
               {formatKrw(now.ethPureMonthly)}
@@ -69,7 +80,10 @@ export function DashboardPage() {
               일 {formatKrw(ethPureDay)} · 세후
             </span>
           </div>
-          <div className="breakdown-item">
+          <div
+            className="breakdown-item animate__animated animate__fadeInUp animate__faster"
+            style={animateDelayMs(200)}
+          >
             <span className="breakdown-item__name">GPIX/GPIQ (월)</span>
             <span className="breakdown-item__val">
               {formatKrw(now.gpixMonthly)}

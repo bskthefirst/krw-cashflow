@@ -1,4 +1,5 @@
 import type { AssetInputs } from '../lib/cashflow'
+import { animateDelayMs } from '../lib/animStyle'
 import { formatPercent } from '../lib/format'
 
 type Props = {
@@ -15,7 +16,10 @@ function num(v: string): number {
 export function AssetEditor({ inputs, onChange, onReset }: Props) {
   return (
     <div className="asset-editor">
-      <section className="asset-editor__block">
+      <section
+        className="asset-editor__block animate__animated animate__fadeInUp animate__faster"
+        style={animateDelayMs(40)}
+      >
         <h2 className="section-title">발행어음 CMA</h2>
         <label className="field">
           <span>세전 일당 (KRW)</span>
@@ -47,7 +51,10 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
         </label>
       </section>
 
-      <section className="asset-editor__block">
+      <section
+        className="asset-editor__block animate__animated animate__fadeInUp animate__faster"
+        style={animateDelayMs(110)}
+      >
         <h2 className="section-title">ETH 스테이킹</h2>
         <label className="field">
           <span>세전 일당 (KRW)</span>
@@ -79,7 +86,10 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
         </label>
       </section>
 
-      <section className="asset-editor__block">
+      <section
+        className="asset-editor__block animate__animated animate__fadeInUp animate__faster"
+        style={animateDelayMs(180)}
+      >
         <h2 className="section-title">GPIX / GPIQ</h2>
         <p className="asset-editor__note">
           세후 월별 순현금 합계를 입력하세요. 보유가 늘면 새 합계만 넣으면 대시보드가
@@ -100,7 +110,10 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
         </label>
       </section>
 
-      <section className="asset-editor__block">
+      <section
+        className="asset-editor__block animate__animated animate__fadeInUp animate__faster"
+        style={animateDelayMs(250)}
+      >
         <h2 className="section-title">예측 시작월</h2>
         <label className="field">
           <span>24개월 차트 시작 (매월 1일)</span>
@@ -116,7 +129,10 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
         </label>
       </section>
 
-      <div className="asset-editor__actions">
+      <div
+        className="asset-editor__actions animate__animated animate__fadeIn animate__faster"
+        style={animateDelayMs(320)}
+      >
         <button type="button" className="btn btn--ghost" onClick={onReset}>
           기본값으로 초기화
         </button>

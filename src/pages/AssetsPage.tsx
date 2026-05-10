@@ -1,5 +1,6 @@
 import { AssetEditor } from '../components/AssetEditor'
 import { usePortfolio } from '../context/usePortfolio'
+import { animateDelayMs } from '../lib/animStyle'
 import {
   currentMonthMetrics,
   getPureDailies,
@@ -14,14 +15,17 @@ export function AssetsPage() {
 
   return (
     <div className="page assets-page">
-      <header className="page__hero">
+      <header className="page__hero animate__animated animate__fadeInDown animate__faster">
         <h1 className="page__title">자산 입력</h1>
         <p className="page__subtitle">
           스프레드시트와 동일하게 세전·세율 또는 월 세후 금액을 조정합니다.
         </p>
       </header>
 
-      <aside className="assets-preview">
+      <aside
+        className="assets-preview animate__animated animate__fadeInUp animate__faster"
+        style={animateDelayMs(70)}
+      >
         <p className="assets-preview__title">미리보기</p>
         <dl className="assets-preview__dl">
           <div>
@@ -38,7 +42,10 @@ export function AssetsPage() {
           </div>
         </dl>
         <p className="assets-preview__fine">
-          CMA 세후 일당 = {pureDailyFromPretax(inputs.cmaPretaxPerDay, inputs.cmaTaxRate).toFixed(2)}{' '}
+          CMA 세후 일당 ={' '}
+          {pureDailyFromPretax(inputs.cmaPretaxPerDay, inputs.cmaTaxRate).toFixed(
+            2,
+          )}{' '}
           ({formatPercent(inputs.cmaTaxRate)} 원천 가정)
         </p>
       </aside>
