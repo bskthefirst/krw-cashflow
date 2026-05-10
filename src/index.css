@@ -1,17 +1,27 @@
 :root {
-  --text: #5c5866;
-  --text-h: #0f0d14;
-  --text-muted: #8b8794;
-  --bg: #faf9fb;
+  color-scheme: light;
+
+  --text: #4a4658;
+  --text-h: #16141c;
+  --text-muted: #7a7585;
+  --bg: #f6f4f8;
+  --bg-elevated: #faf8fc;
   --surface: #ffffff;
-  --surface-2: #efedf1;
-  --border: #e4e2e8;
-  --accent: #6d5acd;
-  --accent-bg: rgba(109, 90, 205, 0.08);
-  --accent-border: rgba(109, 90, 205, 0.35);
+  --surface-2: #ebe8f0;
+  --border: #dcd8e4;
+  --accent: #5b4fc9;
+  --accent-soft: #7c6fe0;
+  --accent-bg: rgba(91, 79, 201, 0.09);
+  --accent-border: rgba(91, 79, 201, 0.28);
+  --chart-track: #ece9f2;
+  --chart-grid: rgba(106, 99, 130, 0.12);
   --shadow-sm:
-    0 1px 2px rgba(15, 13, 20, 0.04),
-    0 4px 12px rgba(15, 13, 20, 0.06);
+    0 1px 2px rgba(22, 18, 35, 0.05),
+    0 8px 24px rgba(22, 18, 35, 0.06);
+  --shadow-card:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 2px 8px rgba(22, 18, 35, 0.04),
+    0 12px 40px rgba(22, 18, 35, 0.06);
 
   font-family:
     'Inter',
@@ -28,24 +38,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #b8b4c0;
-    --text-h: #f4f2f8;
-    --text-muted: #8a8594;
-    --bg: #121015;
-    --surface: #1a1820;
-    --surface-2: #25232c;
-    --border: #34303d;
-    --accent: #a599ff;
-    --accent-bg: rgba(165, 153, 255, 0.12);
-    --accent-border: rgba(165, 153, 255, 0.35);
-    --shadow-sm:
-      0 1px 2px rgba(0, 0, 0, 0.35),
-      0 4px 14px rgba(0, 0, 0, 0.28);
-  }
 }
 
 *,
