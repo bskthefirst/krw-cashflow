@@ -53,6 +53,7 @@ describe('extraMonthlyAfterTax (legacy combined)', () => {
 describe('extraMonthlyAfterTaxSeparate', () => {
   it('computes each leg with its own yield × extra buy', () => {
     const r = extraMonthlyAfterTaxSeparate({
+      portfolioMonthlyAfterTax: 8500,
       gpixMonthlyAfterTax: 4000,
       gpiqMonthlyAfterTax: 4500,
       gpixBookKrw: 20_000_000,
@@ -73,6 +74,7 @@ describe('extraMonthlyAfterTaxSeparate', () => {
     })
     /* Same totals (8500 / 50M / 5M) but lumpy books → separate ≠ pooled marginal */
     const separate = extraMonthlyAfterTaxSeparate({
+      portfolioMonthlyAfterTax: 8500,
       gpixMonthlyAfterTax: 6000,
       gpiqMonthlyAfterTax: 2500,
       gpixBookKrw: 10_000_000,
@@ -85,8 +87,25 @@ describe('extraMonthlyAfterTaxSeparate', () => {
     expect(separate.total).not.toBeCloseTo(blendedWrong!, 0)
   })
 
+  it('when book is zero on a leg, uses portfolio monthly total when it differs from split sum', () => {
+    const r = extraMonthlyAfterTaxSeparate({
+      portfolioMonthlyAfterTax: 5000,
+      gpixMonthlyAfterTax: 1000,
+      gpiqMonthlyAfterTax: 2000,
+      gpixBookKrw: 0,
+      gpiqBookKrw: 10_000_000,
+      extraGpixKrw: 5_000_000,
+      extraGpiqKrw: 1_000_000,
+    })
+    const denom = 10_000_000 + 5_000_000 + 1_000_000
+    expect(r.fromGpix).toBeCloseTo((5000 * 5_000_000) / denom, 8)
+    expect(r.fromGpiq).toBeCloseTo(200, 8)
+    expect(r.total).toBeCloseTo(r.fromGpix + r.fromGpiq, 8)
+  })
+
   it('when book is zero on a leg, allocates portfolio monthly by size (books + extras)', () => {
     const r = extraMonthlyAfterTaxSeparate({
+      portfolioMonthlyAfterTax: 3000,
       gpixMonthlyAfterTax: 1000,
       gpiqMonthlyAfterTax: 2000,
       gpixBookKrw: 0,
@@ -108,6 +127,7 @@ describe('extraMonthlyAfterTaxSeparate', () => {
       gpiqBookKrw: 0,
     })
     const r = extraMonthlyAfterTaxSeparate({
+      portfolioMonthlyAfterTax: 8000,
       gpixMonthlyAfterTax: split.gpixMonthlyAfterTax,
       gpiqMonthlyAfterTax: split.gpiqMonthlyAfterTax,
       gpixBookKrw: 0,
@@ -122,6 +142,7 @@ describe('extraMonthlyAfterTaxSeparate', () => {
 
   it('ignores negative extra buy (clamped to zero)', () => {
     const r = extraMonthlyAfterTaxSeparate({
+      portfolioMonthlyAfterTax: 9000,
       gpixMonthlyAfterTax: 4000,
       gpiqMonthlyAfterTax: 5000,
       gpixBookKrw: 20_000_000,

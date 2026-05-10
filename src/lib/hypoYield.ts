@@ -65,6 +65,8 @@ export type SeparateExtraResult = {
  *   (한쪽 장부만 있을 때 다른 종목 추가 매수가 0으로 떨어지는 문제를 막기 위함).
  */
 export function extraMonthlyAfterTaxSeparate(params: {
+  /** 위 «세후 월 현금흐름» 합계 — 비례 배분 시 이 값을 씁니다 (분할 합과 불일치 방지). */
+  portfolioMonthlyAfterTax: number
   gpixMonthlyAfterTax: number
   gpiqMonthlyAfterTax: number
   gpixBookKrw: number
@@ -73,6 +75,7 @@ export function extraMonthlyAfterTaxSeparate(params: {
   extraGpiqKrw: number
 }): SeparateExtraResult {
   const {
+    portfolioMonthlyAfterTax,
     gpixMonthlyAfterTax,
     gpiqMonthlyAfterTax,
     gpixBookKrw,
@@ -81,20 +84,24 @@ export function extraMonthlyAfterTaxSeparate(params: {
     extraGpiqKrw,
   } = params
 
+  const bG = Math.max(0, gpixBookKrw)
+  const bQ = Math.max(0, gpiqBookKrw)
+
   const xG = Number.isFinite(extraGpixKrw) ? Math.max(0, extraGpixKrw) : 0
   const xQ = Number.isFinite(extraGpiqKrw) ? Math.max(0, extraGpiqKrw) : 0
 
+  const splitSum = Math.max(0, gpixMonthlyAfterTax + gpiqMonthlyAfterTax)
   const totalM =
-    Number.isFinite(gpixMonthlyAfterTax) && Number.isFinite(gpiqMonthlyAfterTax)
-      ? Math.max(0, gpixMonthlyAfterTax + gpiqMonthlyAfterTax)
-      : 0
+    Number.isFinite(portfolioMonthlyAfterTax) && portfolioMonthlyAfterTax > 0
+      ? portfolioMonthlyAfterTax
+      : splitSum
 
-  const denom = Math.max(gpixBookKrw + gpiqBookKrw + xG + xQ, 1)
+  const denom = Math.max(bG + bQ + xG + xQ, 1)
 
   let fromGpix = 0
   if (xG > 0) {
-    if (gpixBookKrw > 0 && Number.isFinite(gpixMonthlyAfterTax)) {
-      fromGpix = (gpixMonthlyAfterTax / gpixBookKrw) * xG
+    if (bG > 0 && Number.isFinite(gpixMonthlyAfterTax)) {
+      fromGpix = (gpixMonthlyAfterTax / bG) * xG
     } else if (totalM > 0) {
       fromGpix = (totalM * xG) / denom
     }
@@ -102,8 +109,8 @@ export function extraMonthlyAfterTaxSeparate(params: {
 
   let fromGpiq = 0
   if (xQ > 0) {
-    if (gpiqBookKrw > 0 && Number.isFinite(gpiqMonthlyAfterTax)) {
-      fromGpiq = (gpiqMonthlyAfterTax / gpiqBookKrw) * xQ
+    if (bQ > 0 && Number.isFinite(gpiqMonthlyAfterTax)) {
+      fromGpiq = (gpiqMonthlyAfterTax / bQ) * xQ
     } else if (totalM > 0) {
       fromGpiq = (totalM * xQ) / denom
     }

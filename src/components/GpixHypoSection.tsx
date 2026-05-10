@@ -34,10 +34,17 @@ function loadFocus(): HypoFocus {
 type HypoPersist = {
   extraGpixKrw: number
   extraGpiqKrw: number
+  /** True if this leg’s KRW was last driven from the 금액 field (vs 주). */
+  gpixLedByKrw?: boolean
+  gpiqLedByKrw?: boolean
 }
 
 function finite(v: unknown, fallback = 0): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback
+}
+
+function asBool(v: unknown): boolean | undefined {
+  return typeof v === 'boolean' ? v : undefined
 }
 
 function loadHypo(): HypoPersist {
@@ -49,6 +56,8 @@ function loadHypo(): HypoPersist {
       return {
         extraGpixKrw: finite(p.extraGpixKrw),
         extraGpiqKrw: finite(p.extraGpiqKrw),
+        gpixLedByKrw: asBool(p.gpixLedByKrw),
+        gpiqLedByKrw: asBool(p.gpiqLedByKrw),
       }
     }
     const rawV1 = localStorage.getItem(HYPO_STORAGE_KEY_V1)
@@ -112,13 +121,20 @@ export function GpixHypoSection({
   const [hypo, setHypo] = useState<HypoPersist>(() => loadHypo())
   const [gpixSharesDraft, setGpixSharesDraft] = useState('')
   const [gpiqSharesDraft, setGpiqSharesDraft] = useState('')
+  /** 금액-led user cleared 주; keep input empty instead of snapping derived 주 back in (controlled-input race). */
+  const [gpixHideDerivedShares, setGpixHideDerivedShares] = useState(false)
+  const [gpiqHideDerivedShares, setGpiqHideDerivedShares] = useState(false)
   const gpixSharesDraftRef = useRef('')
   const gpiqSharesDraftRef = useRef('')
+  const hypoLatestRef = useRef(hypo)
+  const etfLatestRef = useRef<EtfPricesPayload | null>(null)
 
   useLayoutEffect(() => {
+    hypoLatestRef.current = hypo
+    etfLatestRef.current = etf
     gpixSharesDraftRef.current = gpixSharesDraft
     gpiqSharesDraftRef.current = gpiqSharesDraft
-  }, [gpixSharesDraft, gpiqSharesDraft])
+  }, [hypo, etf, gpixSharesDraft, gpiqSharesDraft])
 
   useEffect(() => {
     try {
@@ -148,24 +164,45 @@ export function GpixHypoSection({
       return
     }
     setPriceFailed(false)
+    const prevEtf = etfLatestRef.current
     setEtf(payload)
 
     const gpixQuote = payload.quotes.GPIX
     const gpiqQuote = payload.quotes.GPIQ
-    const gpixShares = num(gpixSharesDraftRef.current)
-    const gpiqShares = num(gpiqSharesDraftRef.current)
+    const h = hypoLatestRef.current
+
+    let gpixShares = num(gpixSharesDraftRef.current)
+    let gpiqShares = num(gpiqSharesDraftRef.current)
+
+    const oldGpixPx = prevEtf?.quotes?.GPIX?.krwPerShare
+    const oldGpiqPx = prevEtf?.quotes?.GPIQ?.krwPerShare
+    const inferredFromKrwGpix =
+      gpixShares <= 0 &&
+      h.extraGpixKrw > 0 &&
+      typeof oldGpixPx === 'number' &&
+      oldGpixPx > 0
+    const inferredFromKrwGpiq =
+      gpiqShares <= 0 &&
+      h.extraGpiqKrw > 0 &&
+      typeof oldGpiqPx === 'number' &&
+      oldGpiqPx > 0
+    if (inferredFromKrwGpix) gpixShares = h.extraGpixKrw / oldGpixPx
+    if (inferredFromKrwGpiq) gpiqShares = h.extraGpiqKrw / oldGpiqPx
+
     if (gpixShares <= 0 && gpiqShares <= 0) return
-    setHypo((h) => ({
-      ...h,
+    setHypo((prev) => ({
+      ...prev,
       extraGpixKrw:
         gpixShares > 0 && gpixQuote && gpixQuote.krwPerShare > 0
           ? gpixShares * gpixQuote.krwPerShare
-          : h.extraGpixKrw,
+          : prev.extraGpixKrw,
       extraGpiqKrw:
         gpiqShares > 0 && gpiqQuote && gpiqQuote.krwPerShare > 0
           ? gpiqShares * gpiqQuote.krwPerShare
-          : h.extraGpiqKrw,
+          : prev.extraGpiqKrw,
     }))
+    setGpixHideDerivedShares(false)
+    setGpiqHideDerivedShares(false)
   }, [])
 
   const refreshPrices = useCallback(async () => {
@@ -191,12 +228,17 @@ export function GpixHypoSection({
   }, [applyPrices])
 
   useEffect(() => {
-    localStorage.setItem(HYPO_STORAGE_KEY_V2, JSON.stringify(hypo))
+    try {
+      localStorage.setItem(HYPO_STORAGE_KEY_V2, JSON.stringify(hypo))
+    } catch {
+      /* ignore quota / private mode */
+    }
   }, [hypo])
 
   const separateExtra = useMemo(
     () =>
       extraMonthlyAfterTaxSeparate({
+        portfolioMonthlyAfterTax: gpixGpiqMonthlyAfterTax,
         gpixMonthlyAfterTax: splitMonthly.gpixMonthlyAfterTax,
         gpiqMonthlyAfterTax: splitMonthly.gpiqMonthlyAfterTax,
         gpixBookKrw,
@@ -204,7 +246,7 @@ export function GpixHypoSection({
         extraGpixKrw: hypo.extraGpixKrw,
         extraGpiqKrw: hypo.extraGpiqKrw,
       }),
-    [splitMonthly, gpixBookKrw, gpiqBookKrw, hypo],
+    [splitMonthly, gpixBookKrw, gpiqBookKrw, hypo, gpixGpiqMonthlyAfterTax],
   )
 
   const marginalGpix = useMemo(
@@ -220,6 +262,37 @@ export function GpixHypoSection({
 
   const gpix = etf?.quotes?.GPIX
   const gpiq = etf?.quotes?.GPIQ
+
+  /** When draft is empty, show shares implied by persisted KRW (avoids blank reload + no setState-in-effect). */
+  const gpixSharesInputValue = useMemo(() => {
+    if (gpixSharesDraft !== '') return gpixSharesDraft
+    if (gpixHideDerivedShares && hypo.gpixLedByKrw === true) return ''
+    if (!gpix || gpix.krwPerShare <= 0 || hypo.extraGpixKrw <= 0) return ''
+    const sh = hypo.extraGpixKrw / gpix.krwPerShare
+    if (!Number.isFinite(sh) || sh <= 0) return ''
+    return String(Math.round(sh * 1_000_000) / 1_000_000)
+  }, [
+    gpixSharesDraft,
+    gpixHideDerivedShares,
+    hypo.gpixLedByKrw,
+    gpix,
+    hypo.extraGpixKrw,
+  ])
+
+  const gpiqSharesInputValue = useMemo(() => {
+    if (gpiqSharesDraft !== '') return gpiqSharesDraft
+    if (gpiqHideDerivedShares && hypo.gpiqLedByKrw === true) return ''
+    if (!gpiq || gpiq.krwPerShare <= 0 || hypo.extraGpiqKrw <= 0) return ''
+    const sh = hypo.extraGpiqKrw / gpiq.krwPerShare
+    if (!Number.isFinite(sh) || sh <= 0) return ''
+    return String(Math.round(sh * 1_000_000) / 1_000_000)
+  }, [
+    gpiqSharesDraft,
+    gpiqHideDerivedShares,
+    hypo.gpiqLedByKrw,
+    gpiq,
+    hypo.extraGpiqKrw,
+  ])
 
   const extraGpixShares =
     gpix && gpix.krwPerShare > 0 ? hypo.extraGpixKrw / gpix.krwPerShare : null
@@ -275,15 +348,25 @@ export function GpixHypoSection({
   const needsMonthlyMsg = activeBuy && gpixGpiqMonthlyAfterTax <= 0
 
   function setExtraGpixFromShares(shares: number) {
+    setGpixHideDerivedShares(false)
     const px = etf?.quotes?.GPIX
     if (!px || px.krwPerShare <= 0 || !Number.isFinite(shares) || shares < 0) return
-    setHypo((h) => ({ ...h, extraGpixKrw: shares * px.krwPerShare }))
+    setHypo((h) => ({
+      ...h,
+      extraGpixKrw: shares * px.krwPerShare,
+      gpixLedByKrw: false,
+    }))
   }
 
   function setExtraGpiqFromShares(shares: number) {
+    setGpiqHideDerivedShares(false)
     const pq = etf?.quotes?.GPIQ
     if (!pq || pq.krwPerShare <= 0 || !Number.isFinite(shares) || shares < 0) return
-    setHypo((h) => ({ ...h, extraGpiqKrw: shares * pq.krwPerShare }))
+    setHypo((h) => ({
+      ...h,
+      extraGpiqKrw: shares * pq.krwPerShare,
+      gpiqLedByKrw: false,
+    }))
   }
 
   const sumBook = gpixBookKrw + gpiqBookKrw
@@ -395,18 +478,35 @@ export function GpixHypoSection({
                 min={0}
                 step="any"
                 placeholder={gpix ? `주당 ${formatKrw(gpix.krwPerShare, 0)}` : '시세 로딩 후 입력'}
-                value={gpixSharesDraft}
+                value={gpixSharesInputValue}
                 onChange={(e) => {
                   const raw = e.target.value
                   setGpixSharesDraft(raw)
                   const v = num(raw)
-                  if (raw === '' || v === 0) {
-                    setHypo((h) => ({ ...h, extraGpixKrw: 0 }))
+                  if (raw === '') {
+                    if (gpixSharesDraft !== '') {
+                      setGpixHideDerivedShares(false)
+                      setHypo((h) => ({ ...h, extraGpixKrw: 0, gpixLedByKrw: false }))
+                    } else if (hypo.gpixLedByKrw === true && hypo.extraGpixKrw > 0) {
+                      setGpixHideDerivedShares(true)
+                    } else {
+                      setGpixHideDerivedShares(false)
+                      setHypo((h) => ({ ...h, extraGpixKrw: 0, gpixLedByKrw: false }))
+                    }
                     return
                   }
-                  if (gpix && gpix.krwPerShare > 0) {
+                  if (v > 0 && gpix && gpix.krwPerShare > 0) {
                     setExtraGpixFromShares(v)
                   }
+                }}
+                onBlur={(e) => {
+                  const raw = e.target.value
+                  const v = num(raw)
+                  if (raw !== '' && v > 0) return
+                  setGpixSharesDraft('')
+                  if (raw === '' && hypo.gpixLedByKrw === true && hypo.extraGpixKrw > 0) return
+                  setGpixHideDerivedShares(false)
+                  setHypo((h) => ({ ...h, extraGpixKrw: 0, gpixLedByKrw: false }))
                 }}
               />
               {gpix && gpix.krwPerShare > 0 && (
@@ -414,7 +514,7 @@ export function GpixHypoSection({
                   type="button"
                   className="btn btn--ghost hypo-field__chip"
                   onClick={() => {
-                    const next = (num(gpixSharesDraft) > 0 ? num(gpixSharesDraft) : 0) + 1
+                    const next = (num(gpixSharesInputValue) > 0 ? num(gpixSharesInputValue) : 0) + 1
                     setGpixSharesDraft(String(next))
                     setExtraGpixFromShares(next)
                   }}
@@ -435,18 +535,35 @@ export function GpixHypoSection({
                 min={0}
                 step="any"
                 placeholder={gpiq ? `주당 ${formatKrw(gpiq.krwPerShare, 0)}` : '시세 로딩 후 입력'}
-                value={gpiqSharesDraft}
+                value={gpiqSharesInputValue}
                 onChange={(e) => {
                   const raw = e.target.value
                   setGpiqSharesDraft(raw)
                   const v = num(raw)
-                  if (raw === '' || v === 0) {
-                    setHypo((h) => ({ ...h, extraGpiqKrw: 0 }))
+                  if (raw === '') {
+                    if (gpiqSharesDraft !== '') {
+                      setGpiqHideDerivedShares(false)
+                      setHypo((h) => ({ ...h, extraGpiqKrw: 0, gpiqLedByKrw: false }))
+                    } else if (hypo.gpiqLedByKrw === true && hypo.extraGpiqKrw > 0) {
+                      setGpiqHideDerivedShares(true)
+                    } else {
+                      setGpiqHideDerivedShares(false)
+                      setHypo((h) => ({ ...h, extraGpiqKrw: 0, gpiqLedByKrw: false }))
+                    }
                     return
                   }
-                  if (gpiq && gpiq.krwPerShare > 0) {
+                  if (v > 0 && gpiq && gpiq.krwPerShare > 0) {
                     setExtraGpiqFromShares(v)
                   }
+                }}
+                onBlur={(e) => {
+                  const raw = e.target.value
+                  const v = num(raw)
+                  if (raw !== '' && v > 0) return
+                  setGpiqSharesDraft('')
+                  if (raw === '' && hypo.gpiqLedByKrw === true && hypo.extraGpiqKrw > 0) return
+                  setGpiqHideDerivedShares(false)
+                  setHypo((h) => ({ ...h, extraGpiqKrw: 0, gpiqLedByKrw: false }))
                 }}
               />
               {gpiq && gpiq.krwPerShare > 0 && (
@@ -454,7 +571,7 @@ export function GpixHypoSection({
                   type="button"
                   className="btn btn--ghost hypo-field__chip"
                   onClick={() => {
-                    const next = (num(gpiqSharesDraft) > 0 ? num(gpiqSharesDraft) : 0) + 1
+                    const next = (num(gpiqSharesInputValue) > 0 ? num(gpiqSharesInputValue) : 0) + 1
                     setGpiqSharesDraft(String(next))
                     setExtraGpiqFromShares(next)
                   }}
@@ -497,7 +614,12 @@ export function GpixHypoSection({
                 value={hypo.extraGpixKrw}
                 onChange={(e) => {
                   setGpixSharesDraft('')
-                  setHypo((h) => ({ ...h, extraGpixKrw: num(e.target.value) }))
+                  setGpixHideDerivedShares(false)
+                  setHypo((h) => ({
+                    ...h,
+                    extraGpixKrw: num(e.target.value),
+                    gpixLedByKrw: true,
+                  }))
                 }}
               />
               {gpix && gpix.krwPerShare > 0 && (
@@ -505,9 +627,11 @@ export function GpixHypoSection({
                   type="button"
                   className="btn btn--ghost hypo-field__chip"
                   onClick={() => {
+                    setGpixHideDerivedShares(false)
                     setHypo((h) => ({
                       ...h,
                       extraGpixKrw: h.extraGpixKrw + gpix.krwPerShare,
+                      gpixLedByKrw: true,
                     }))
                     setGpixSharesDraft((prev) => {
                       const current = num(prev)
@@ -537,7 +661,12 @@ export function GpixHypoSection({
                 value={hypo.extraGpiqKrw}
                 onChange={(e) => {
                   setGpiqSharesDraft('')
-                  setHypo((h) => ({ ...h, extraGpiqKrw: num(e.target.value) }))
+                  setGpiqHideDerivedShares(false)
+                  setHypo((h) => ({
+                    ...h,
+                    extraGpiqKrw: num(e.target.value),
+                    gpiqLedByKrw: true,
+                  }))
                 }}
               />
               {gpiq && gpiq.krwPerShare > 0 && (
@@ -545,9 +674,11 @@ export function GpixHypoSection({
                   type="button"
                   className="btn btn--ghost hypo-field__chip"
                   onClick={() => {
+                    setGpiqHideDerivedShares(false)
                     setHypo((h) => ({
                       ...h,
                       extraGpiqKrw: h.extraGpiqKrw + gpiq.krwPerShare,
+                      gpiqLedByKrw: true,
                     }))
                     setGpiqSharesDraft((prev) => {
                       const current = num(prev)
