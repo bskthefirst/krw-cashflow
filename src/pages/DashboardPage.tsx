@@ -54,7 +54,12 @@ export function DashboardPage() {
       </section>
 
       <section className="dashboard__breakdown">
-        <h2 className="section-title">이번 달 구성</h2>
+        <h2
+          className="section-title animate__animated animate__fadeInLeft animate__faster"
+          style={animateDelayMs(10)}
+        >
+          이번 달 구성
+        </h2>
         <div className="breakdown-grid">
           <div
             className="breakdown-item animate__animated animate__fadeInUp animate__faster"

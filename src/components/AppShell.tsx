@@ -32,7 +32,7 @@ export function AppShell() {
       </header>
       <main
         key={pathname}
-        className="app-main animate__animated animate__fadeIn animate__faster"
+        className="app-main animate__animated animate__fadeInUp animate__faster"
       >
         <Outlet />
       </main>

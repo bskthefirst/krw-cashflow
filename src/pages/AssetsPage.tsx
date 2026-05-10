@@ -1,4 +1,5 @@
 import { AssetEditor } from '../components/AssetEditor'
+import { InteractionSettings } from '../components/InteractionSettings'
 import { usePortfolio } from '../context/usePortfolio'
 import { animateDelayMs } from '../lib/animStyle'
 import {
@@ -23,7 +24,7 @@ export function AssetsPage() {
       </header>
 
       <aside
-        className="assets-preview animate__animated animate__fadeInUp animate__faster"
+        className="assets-preview animate__animated animate__zoomIn animate__faster"
         style={animateDelayMs(70)}
       >
         <p className="assets-preview__title">미리보기</p>
@@ -51,6 +52,8 @@ export function AssetsPage() {
       </aside>
 
       <AssetEditor inputs={inputs} onChange={setInputs} onReset={reset} />
+
+      <InteractionSettings />
     </div>
   )
 }

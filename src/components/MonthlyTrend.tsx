@@ -1,6 +1,10 @@
+import type { CSSProperties } from 'react'
 import { useCallback, useState } from 'react'
-import type { MonthlyProjectionRow } from '../lib/cashflow'
 import { animateDelayMs } from '../lib/animStyle'
+import type { MonthlyProjectionRow } from '../lib/cashflow'
+import { vibrateTap } from '../lib/haptics'
+import { getInteractionPrefs } from '../lib/interactionPrefs'
+import { playSoftTapSound } from '../lib/tapSound'
 
 type Props = {
   rows: MonthlyProjectionRow[]
@@ -16,21 +20,28 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+/** Slower, smoother bar pop (Animate.css rubberBand + long duration). */
+const BAR_POP_DURATION = '2.35s'
+
 export function MonthlyTrend({ rows }: Props) {
   const max = Math.max(...rows.map((r) => r.totalPureMonthly), 1)
-  const [jelloKey, setJelloKey] = useState<string | null>(null)
+  const [activeBarKey, setActiveBarKey] = useState<string | null>(null)
 
-  const playJello = useCallback((monthKey: string) => {
+  const playBarPop = useCallback((monthKey: string) => {
     if (prefersReducedMotion()) return
-    /* Replay: clear then re-apply next frame so CSS animation restarts */
-    setJelloKey(null)
+
+    const prefs = getInteractionPrefs()
+    if (prefs.haptics) vibrateTap()
+    if (prefs.sound) void playSoftTapSound()
+
+    setActiveBarKey(null)
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => setJelloKey(monthKey))
+      requestAnimationFrame(() => setActiveBarKey(monthKey))
     })
   }, [])
 
-  const onJelloEnd = useCallback((monthKey: string) => {
-    setJelloKey((k) => (k === monthKey ? null : k))
+  const onBarPopEnd = useCallback((monthKey: string) => {
+    setActiveBarKey((k) => (k === monthKey ? null : k))
   }, [])
 
   return (
@@ -41,7 +52,7 @@ export function MonthlyTrend({ rows }: Props) {
             24개월 순현금
           </h2>
           <p className="monthly-trend__caption">
-            세후 순현금 월별 추정 · 막대를 누르면 통통{' '}
+            세후 순현금 월별 추정 · 막대를 누르면 천천히 탄성 있게 움직여요{' '}
             <span className="monthly-trend__caption-wink" aria-hidden>
               ✨
             </span>
@@ -50,7 +61,7 @@ export function MonthlyTrend({ rows }: Props) {
       </div>
 
       <div
-        className="monthly-trend__panel animate__animated animate__fadeInUp animate__faster"
+        className="monthly-trend__panel animate__animated animate__slideInUp animate__faster"
         style={animateDelayMs(90)}
       >
         <div className="monthly-trend__y-axis" aria-hidden>
@@ -63,7 +74,7 @@ export function MonthlyTrend({ rows }: Props) {
           className="monthly-trend__scroll"
           tabIndex={0}
           role="region"
-          aria-label="24개월 순현금 세로 막대 차트, 좌우로 스크롤. 각 막대를 누르면 애니메이션"
+          aria-label="24-month vertical cashflow chart. Scroll horizontally. Tap a bar for animation."
         >
           <div className="monthly-trend__chart">
             {rows.map((r, i) => {
@@ -71,7 +82,13 @@ export function MonthlyTrend({ rows }: Props) {
               const rounded = Math.round(r.totalPureMonthly)
               const title = `${r.label} — ${rounded.toLocaleString('ko-KR')} KRW`
               const stagger = Math.min(i * 22, 520)
-              const isJello = jelloKey === r.monthKey
+              const isPop = activeBarKey === r.monthKey
+
+              const popStyle = isPop
+                ? ({
+                    '--animate-duration': BAR_POP_DURATION,
+                  } as CSSProperties)
+                : undefined
 
               return (
                 <div
@@ -82,17 +99,18 @@ export function MonthlyTrend({ rows }: Props) {
                   <button
                     type="button"
                     className={
-                      isJello
-                        ? 'monthly-trend__hit animate__animated animate__jello animate__faster'
+                      isPop
+                        ? 'monthly-trend__hit animate__animated animate__rubberBand'
                         : 'monthly-trend__hit'
                     }
-                    aria-label={`${r.label} 순현금 막대. 탭하면 통통 애니메이션`}
-                    title={`${title} · 탭하면 통통`}
+                    style={popStyle}
+                    aria-label={`${r.label} cashflow bar. Tap for elastic animation.`}
+                    title={`${title} · tap`}
                     onClick={(e) => {
                       e.stopPropagation()
-                      playJello(r.monthKey)
+                      playBarPop(r.monthKey)
                     }}
-                    onAnimationEnd={() => onJelloEnd(r.monthKey)}
+                    onAnimationEnd={() => onBarPopEnd(r.monthKey)}
                   >
                     <div className="monthly-trend__track-v">
                       <div

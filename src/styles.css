@@ -466,6 +466,64 @@
   color: var(--text-muted);
 }
 
+.interaction-settings {
+  margin-top: 2rem;
+  padding: 1.15rem 1.2rem;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    165deg,
+    var(--surface) 0%,
+    color-mix(in oklab, var(--surface) 94%, var(--accent-bg)) 100%
+  );
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.interaction-settings__title {
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.interaction-settings__hint {
+  margin: 0 0 1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.interaction-settings__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  min-height: 44px;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 75%, transparent);
+}
+
+.interaction-settings__row:last-of-type {
+  border-bottom: none;
+}
+
+.interaction-settings__label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+.interaction-settings__checkbox {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .asset-editor__block {
   margin-bottom: 1.75rem;
   padding-bottom: 1.5rem;
