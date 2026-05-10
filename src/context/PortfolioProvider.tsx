@@ -13,6 +13,7 @@ import {
 import { PortfolioContext } from './portfolio-context'
 
 const STORAGE_KEY = 'krw-cashflow-portfolio-v1'
+const HYPO_LEGACY_KEY = 'krw-cashflow-hypo-v2'
 
 function loadInputs(): AssetInputs {
   try {
@@ -24,7 +25,16 @@ function loadInputs(): AssetInputs {
       }
     }
     const parsed = JSON.parse(raw) as Partial<AssetInputs>
-    return {
+    const gpixBookKrw =
+      typeof parsed.gpixBookKrw === 'number' && Number.isFinite(parsed.gpixBookKrw)
+        ? parsed.gpixBookKrw
+        : DEFAULT_INPUTS.gpixBookKrw
+    const gpiqBookKrw =
+      typeof parsed.gpiqBookKrw === 'number' && Number.isFinite(parsed.gpiqBookKrw)
+        ? parsed.gpiqBookKrw
+        : DEFAULT_INPUTS.gpiqBookKrw
+
+    const out: AssetInputs = {
       cmaPretaxPerDay:
         typeof parsed.cmaPretaxPerDay === 'number'
           ? parsed.cmaPretaxPerDay
@@ -45,12 +55,36 @@ function loadInputs(): AssetInputs {
         typeof parsed.gpixGpiqMonthlyAfterTax === 'number'
           ? parsed.gpixGpiqMonthlyAfterTax
           : DEFAULT_INPUTS.gpixGpiqMonthlyAfterTax,
+      gpixBookKrw,
+      gpiqBookKrw,
       forecastStartMonth:
         typeof parsed.forecastStartMonth === 'string' &&
         /^\d{4}-\d{2}-01$/.test(parsed.forecastStartMonth)
           ? parsed.forecastStartMonth
           : startOfMonthISO(new Date()),
     }
+
+    if (out.gpixBookKrw === 0 && out.gpiqBookKrw === 0) {
+      try {
+        const hypoRaw = localStorage.getItem(HYPO_LEGACY_KEY)
+        if (hypoRaw) {
+          const h = JSON.parse(hypoRaw) as {
+            gpixBookKrw?: number
+            gpiqBookKrw?: number
+          }
+          if (typeof h.gpixBookKrw === 'number' && Number.isFinite(h.gpixBookKrw) && h.gpixBookKrw > 0) {
+            out.gpixBookKrw = h.gpixBookKrw
+          }
+          if (typeof h.gpiqBookKrw === 'number' && Number.isFinite(h.gpiqBookKrw) && h.gpiqBookKrw > 0) {
+            out.gpiqBookKrw = h.gpiqBookKrw
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    return out
   } catch {
     return {
       ...DEFAULT_INPUTS,

@@ -794,6 +794,37 @@
   max-width: 36rem;
 }
 
+.hypo-calc__linked-books {
+  margin: 0 0 1.15rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--accent-border);
+  background: color-mix(in oklab, var(--accent-bg) 88%, var(--surface));
+  text-align: left;
+}
+
+.hypo-calc__linked-books__title {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.hypo-calc__linked-books__row {
+  margin: 0.15rem 0;
+  font-size: 0.92rem;
+  color: var(--text-h);
+}
+
+.hypo-calc__linked-books__hint {
+  margin: 0.55rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
 .hypo-etf-bar__head {
   display: flex;
   align-items: center;

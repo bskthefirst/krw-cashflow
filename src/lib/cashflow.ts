@@ -13,6 +13,10 @@ export type AssetInputs = {
   ethTaxRate: number
   /** GPIX/GPIQ total monthly after-tax KRW (control cell) */
   gpixGpiqMonthlyAfterTax: number
+  /** GPIX only: cost / book basis in KRW (for yield-on-book sim; optional) */
+  gpixBookKrw: number
+  /** GPIQ only: cost / book basis in KRW (for yield-on-book sim; optional) */
+  gpiqBookKrw: number
   /** First day of month (YYYY-MM-DD) — anchors the 24-month projection */
   forecastStartMonth: string
 }
@@ -149,5 +153,7 @@ export const DEFAULT_INPUTS: AssetInputs = {
   ethPretaxPerDay: 340,
   ethTaxRate: 0.1,
   gpixGpiqMonthlyAfterTax: 8500,
+  gpixBookKrw: 0,
+  gpiqBookKrw: 0,
   forecastStartMonth: '2026-05-01',
 }

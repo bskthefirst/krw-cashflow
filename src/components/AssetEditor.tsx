@@ -92,8 +92,8 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
       >
         <h2 className="section-title">GPIX / GPIQ</h2>
         <p className="asset-editor__note">
-          세후 월별 순현금 합계를 입력하세요. 보유가 늘면 새 합계만 넣으면 대시보드가
-          즉시 반영됩니다.
+          세후 월별 순현금 <strong>합계</strong>와, 종목별 <strong>매수·장부 금액</strong>을
+          여기서 같이 둡니다. 아래 시뮬은 이 장부 금액을 그대로 씁니다.
         </p>
         <label className="field">
           <span>세후 월 현금흐름 (KRW)</span>
@@ -107,6 +107,34 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
               onChange({ gpixGpiqMonthlyAfterTax: num(e.target.value) })
             }
           />
+        </label>
+        <label className="field">
+          <span>GPIX 매수·장부 금액 (KRW)</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={10000}
+            value={inputs.gpixBookKrw}
+            onChange={(e) => onChange({ gpixBookKrw: num(e.target.value) })}
+          />
+          <small className="field__meta">
+            그 종목에 묶여 있는 금액(보통 매수 원금·증권 앱 표시). 월 세후 ÷ 이 금액으로 비율을 냅니다.
+          </small>
+        </label>
+        <label className="field">
+          <span>GPIQ 매수·장부 금액 (KRW)</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={10000}
+            value={inputs.gpiqBookKrw}
+            onChange={(e) => onChange({ gpiqBookKrw: num(e.target.value) })}
+          />
+          <small className="field__meta">
+            GPIX와 별도입니다. 시뮬의 장부 입력은 모두 여기서만 바뀝니다.
+          </small>
         </label>
       </section>
 

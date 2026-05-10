@@ -63,7 +63,11 @@ export function AssetsPage() {
 
       <AssetEditor inputs={inputs} onChange={setInputs} onReset={reset} />
 
-      <GpixHypoSection gpixGpiqMonthlyAfterTax={inputs.gpixGpiqMonthlyAfterTax} />
+      <GpixHypoSection
+        gpixGpiqMonthlyAfterTax={inputs.gpixGpiqMonthlyAfterTax}
+        gpixBookKrw={inputs.gpixBookKrw}
+        gpiqBookKrw={inputs.gpiqBookKrw}
+      />
 
       <InteractionSettings style={animateDelayMs(400)} />
     </div>
