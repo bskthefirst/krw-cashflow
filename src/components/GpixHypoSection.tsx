@@ -335,9 +335,17 @@ export function GpixHypoSection({
   // annual yield rate fallback even when no existing holdings/book value is set.
   const showYieldCard = activeBuy
   const usesProportionalGpix =
-    hypo.extraGpixKrw > 0 && gpixBookKrw <= 0 && gpiqBookKrw > 0 && gpixGpiqMonthlyAfterTax > 0
+    hypo.extraGpixKrw > 0 &&
+    gpixBookKrw <= 0 &&
+    gpiqBookKrw > 0 &&
+    gpixGpiqMonthlyAfterTax > 0 &&
+    !(gpixAnnualYieldRate > 0)
   const usesProportionalGpiq =
-    hypo.extraGpiqKrw > 0 && gpiqBookKrw <= 0 && gpixBookKrw > 0 && gpixGpiqMonthlyAfterTax > 0
+    hypo.extraGpiqKrw > 0 &&
+    gpiqBookKrw <= 0 &&
+    gpixBookKrw > 0 &&
+    gpixGpiqMonthlyAfterTax > 0 &&
+    !(gpiqAnnualYieldRate > 0)
 
   const bothForecastBreak = useMemo(() => {
     const parts: string[] = []
@@ -355,7 +363,12 @@ export function GpixHypoSection({
     separateExtra.fromGpiq,
   ])
 
-  const needsMonthlyMsg = activeBuy && gpixGpiqMonthlyAfterTax <= 0
+  // Monthly total is only required for book-based (and proportional-fallback) legs.
+  // Pure fresh-buy (no book on either leg) uses annual yield — no monthly input needed.
+  const needsMonthlyMsg =
+    activeBuy &&
+    gpixGpiqMonthlyAfterTax <= 0 &&
+    (gpixBookKrw > 0 || gpiqBookKrw > 0)
 
   function setExtraGpixFromShares(shares: number) {
     setGpixHideDerivedShares(false)
@@ -388,7 +401,9 @@ export function GpixHypoSection({
       </h2>
       <p className="hypo-section__note">
         주 또는 KRW로 추가 매수를 넣으면, 그만큼의 <strong>월 세후 현금흐름</strong>과{' '}
-        <strong>월 수익률</strong>을 보여 줍니다. (위 «세후 월 현금흐름» 합계 필요)
+        <strong>월 수익률</strong>을 보여 줍니다. 장부가 없으면 위 «연 배당 수익률»
+        (자산 입력)으로 순수 매수를 가정합니다. 장부가 있으면 «세후 월 현금흐름» 합계도
+        맞춰 두는 것이 정확합니다.
       </p>
 
       <div className="hypo-prices">
@@ -712,7 +727,9 @@ export function GpixHypoSection({
         >
           {needsMonthlyMsg && (
             <p className="hypo-calc__warn">
-              위에서 <strong>세후 월 현금흐름 (GPIX+GPIQ 합계)</strong>를 먼저 입력해야 월 세후 수익을 볼 수 있습니다.
+              <strong>장부</strong>가 있는 상태에서 월 세후 수익을 정확히 나누려면, 위{' '}
+              <strong>세후 월 현금흐름 (GPIX+GPIQ 합계)</strong>를 입력하세요. (장부가
+              없으면 연 배당 수익률만으로도 순수 매수 시뮬이 가능합니다.)
             </p>
           )}
 

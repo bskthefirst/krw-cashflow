@@ -146,6 +146,36 @@ describe('extraMonthlyAfterTaxSeparate', () => {
     expect(r.total).toBeCloseTo(expectedGpix + expectedGpiq, 4)
   })
 
+  it('clamps withholding to [0,1] for fresh-buy rate', () => {
+    const r = extraMonthlyAfterTaxSeparate({
+      portfolioMonthlyAfterTax: 0,
+      gpixMonthlyAfterTax: 0,
+      gpiqMonthlyAfterTax: 0,
+      gpixBookKrw: 0,
+      gpiqBookKrw: 0,
+      extraGpixKrw: 1_000_000,
+      extraGpiqKrw: 0,
+      gpixAnnualYieldRate: 0.12,
+      gpiqAnnualYieldRate: 0,
+      withholdingRate: 2,
+    })
+    expect(r.fromGpix).toBe(0)
+
+    const r2 = extraMonthlyAfterTaxSeparate({
+      portfolioMonthlyAfterTax: 0,
+      gpixMonthlyAfterTax: 0,
+      gpiqMonthlyAfterTax: 0,
+      gpixBookKrw: 0,
+      gpiqBookKrw: 0,
+      extraGpixKrw: 1_000_000,
+      extraGpiqKrw: 0,
+      gpixAnnualYieldRate: 0.12,
+      gpiqAnnualYieldRate: 0,
+      withholdingRate: -0.5,
+    })
+    expect(r2.fromGpix).toBeCloseTo((0.12 / 12) * 1_000_000, 4)
+  })
+
   it('both books zero, no annual rates: returns 0', () => {
     const split = monthlyCashSplitByBook({
       totalMonthlyAfterTax: 8000,

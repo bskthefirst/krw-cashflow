@@ -110,8 +110,15 @@ export function extraMonthlyAfterTaxSeparate(params: {
   const denom = Math.max(bG + bQ + xG + xQ, 1)
 
   // Monthly rate derived from annual yield rate + withholding tax (fresh-buy fallback).
-  const freshRateGpix = gpixAnnualYieldRate > 0 ? (gpixAnnualYieldRate / 12) * (1 - withholdingRate) : null
-  const freshRateGpiq = gpiqAnnualYieldRate > 0 ? (gpiqAnnualYieldRate / 12) * (1 - withholdingRate) : null
+  const w = Math.min(1, Math.max(0, Number.isFinite(withholdingRate) ? withholdingRate : 0))
+  const freshRateGpix =
+    gpixAnnualYieldRate > 0
+      ? (gpixAnnualYieldRate / 12) * (1 - w)
+      : null
+  const freshRateGpiq =
+    gpiqAnnualYieldRate > 0
+      ? (gpiqAnnualYieldRate / 12) * (1 - w)
+      : null
 
   // Portfolio-weighted proportional fallback is only valid when at least one
   // leg has a real book value (bG > 0 || bQ > 0); when both are 0 this fallback
