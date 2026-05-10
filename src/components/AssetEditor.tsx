@@ -147,6 +147,47 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
           </small>
         </label>
 
+        <h3 className="asset-editor__sub-title">배당 수익률</h3>
+        <label className="field">
+          <span>GPIX 연 배당 수익률</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            max={1}
+            step={0.001}
+            value={inputs.gpixAnnualYieldRate}
+            onChange={(e) => onChange({ gpixAnnualYieldRate: num(e.target.value) })}
+          />
+          <small className="field__meta">{formatPercent(inputs.gpixAnnualYieldRate)} — 보유 없이 순수 매수 시뮬에 사용됩니다.</small>
+        </label>
+        <label className="field">
+          <span>GPIQ 연 배당 수익률</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            max={1}
+            step={0.001}
+            value={inputs.gpiqAnnualYieldRate}
+            onChange={(e) => onChange({ gpiqAnnualYieldRate: num(e.target.value) })}
+          />
+          <small className="field__meta">{formatPercent(inputs.gpiqAnnualYieldRate)}</small>
+        </label>
+        <label className="field">
+          <span>배당 원천징수 세율</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            max={1}
+            step={0.001}
+            value={inputs.etfWithholdingRate}
+            onChange={(e) => onChange({ etfWithholdingRate: num(e.target.value) })}
+          />
+          <small className="field__meta">{formatPercent(inputs.etfWithholdingRate)} — 국내 ETF 배당 원천징수 기본값 15.4%</small>
+        </label>
+
         <h3 className="asset-editor__sub-title">월 현금흐름</h3>
         <label className="field">
           <span>세후 월 현금흐름 합계 (KRW)</span>
@@ -161,7 +202,7 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
             }
           />
           <small className="field__meta">
-            증권사 월배당 실수령액. 연배당 ÷ 12 × (1 − 15.4%) 로 추산 가능.
+            증권사 월배당 실수령액 (보유 중일 때 정확도 향상용).
           </small>
         </label>
       </section>

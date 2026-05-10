@@ -54,6 +54,9 @@ export function AssetsPage() {
         gpixGpiqMonthlyAfterTax={inputs.gpixGpiqMonthlyAfterTax}
         gpixBookKrw={inputs.gpixBookKrw}
         gpiqBookKrw={inputs.gpiqBookKrw}
+        gpixAnnualYieldRate={inputs.gpixAnnualYieldRate}
+        gpiqAnnualYieldRate={inputs.gpiqAnnualYieldRate}
+        etfWithholdingRate={inputs.etfWithholdingRate}
       />
 
       <InteractionSettings />

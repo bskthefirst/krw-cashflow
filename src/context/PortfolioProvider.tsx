@@ -74,6 +74,9 @@ function loadInputs(): AssetInputs {
       gpiqPurchaseKrw,
       gpixBookKrw: derivedGpixBook ?? gpixBookKrw,
       gpiqBookKrw: derivedGpiqBook ?? gpiqBookKrw,
+      gpixAnnualYieldRate: fin(parsed.gpixAnnualYieldRate, DEFAULT_INPUTS.gpixAnnualYieldRate),
+      gpiqAnnualYieldRate: fin(parsed.gpiqAnnualYieldRate, DEFAULT_INPUTS.gpiqAnnualYieldRate),
+      etfWithholdingRate: fin(parsed.etfWithholdingRate, DEFAULT_INPUTS.etfWithholdingRate),
       forecastStartMonth:
         typeof parsed.forecastStartMonth === 'string' &&
         /^\d{4}-\d{2}-01$/.test(parsed.forecastStartMonth)

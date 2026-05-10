@@ -25,6 +25,12 @@ export type AssetInputs = {
   gpixBookKrw: number
   /** GPIQ cost/book basis KRW — auto-derived from gpiqShares × gpiqPurchaseKrw */
   gpiqBookKrw: number
+  /** GPIX annual dividend yield rate (e.g. 0.0748 for 7.48%). Used as fallback for fresh-buy simulation when no book value is set. */
+  gpixAnnualYieldRate: number
+  /** GPIQ annual dividend yield rate (e.g. 0.0892 for 8.92%) */
+  gpiqAnnualYieldRate: number
+  /** Withholding tax rate applied to ETF dividends (e.g. 0.154 for 15.4%) */
+  etfWithholdingRate: number
   /** First day of month (YYYY-MM-DD) — anchors the 24-month projection */
   forecastStartMonth: string
 }
@@ -170,5 +176,8 @@ export const DEFAULT_INPUTS: AssetInputs = {
   gpixBookKrw: 1_160_222,
   // 2 × 79_147
   gpiqBookKrw: 158_294,
+  gpixAnnualYieldRate: 0.0748,
+  gpiqAnnualYieldRate: 0.0892,
+  etfWithholdingRate: 0.154,
   forecastStartMonth: '2026-05-01',
 }

@@ -58,11 +58,13 @@ export type SeparateExtraResult = {
 }
 
 /**
- * Extra monthly after-tax from incremental buys.
- * - When a ticker has **장부 > 0**: (그 종목 월 세후 ÷ 그 장부) × 추가 매수 (marginal, per leg).
- * - When **한쪽 장부만 0**이고 다른 쪽 장부는 있는 경우: 포트폴리오 월 세후 합계를
- *   `(장부GPIX+장부GPIQ+추가GPIX+추가GPIQ)` 가중으로 나눠 그 추가분에 비례 배분합니다.
- * - When **양쪽 장부 모두 0**: 수익률을 알 수 없으므로 0을 반환합니다 (장부 입력 필요).
+ * Extra monthly after-tax from incremental (or fresh) buys.
+ *
+ * Priority for yield rate per leg:
+ *   1. Book-based: (그 종목 월 세후 ÷ 장부) — most accurate when holdings exist.
+ *   2. Annual-rate fallback: (annualYieldRate / 12) × (1 − withholdingRate) — used
+ *      when 장부 = 0, enabling a clean fresh-buy simulation with no existing holdings.
+ *   3. Portfolio-weighted fallback: used only when one leg has book = 0 and the other does not.
  */
 export function extraMonthlyAfterTaxSeparate(params: {
   /** 위 «세후 월 현금흐름» 합계 — 비례 배분 시 이 값을 씁니다 (분할 합과 불일치 방지). */
@@ -73,6 +75,12 @@ export function extraMonthlyAfterTaxSeparate(params: {
   gpiqBookKrw: number
   extraGpixKrw: number
   extraGpiqKrw: number
+  /** Annual dividend yield rate for GPIX (e.g. 0.0748). Used when gpixBookKrw = 0. */
+  gpixAnnualYieldRate?: number
+  /** Annual dividend yield rate for GPIQ (e.g. 0.0892). Used when gpiqBookKrw = 0. */
+  gpiqAnnualYieldRate?: number
+  /** Withholding tax rate (e.g. 0.154). Applied to annual rate when computing fresh-buy yield. */
+  withholdingRate?: number
 }): SeparateExtraResult {
   const {
     portfolioMonthlyAfterTax,
@@ -82,6 +90,9 @@ export function extraMonthlyAfterTaxSeparate(params: {
     gpiqBookKrw,
     extraGpixKrw,
     extraGpiqKrw,
+    gpixAnnualYieldRate = 0,
+    gpiqAnnualYieldRate = 0,
+    withholdingRate = 0.154,
   } = params
 
   const bG = Math.max(0, gpixBookKrw)
@@ -89,13 +100,6 @@ export function extraMonthlyAfterTaxSeparate(params: {
 
   const xG = Number.isFinite(extraGpixKrw) ? Math.max(0, extraGpixKrw) : 0
   const xQ = Number.isFinite(extraGpiqKrw) ? Math.max(0, extraGpiqKrw) : 0
-
-  // If neither leg has a recorded book value we have no yield rate to apply.
-  // Proportional fallback would divide existing monthly by only the new purchase
-  // and hand back 100 % of the current cash flow as "incremental" — wrong.
-  if (bG <= 0 && bQ <= 0) {
-    return { fromGpix: 0, fromGpiq: 0, total: 0 }
-  }
 
   const splitSum = Math.max(0, gpixMonthlyAfterTax + gpiqMonthlyAfterTax)
   const totalM =
@@ -105,12 +109,25 @@ export function extraMonthlyAfterTaxSeparate(params: {
 
   const denom = Math.max(bG + bQ + xG + xQ, 1)
 
+  // Monthly rate derived from annual yield rate + withholding tax (fresh-buy fallback).
+  const freshRateGpix = gpixAnnualYieldRate > 0 ? (gpixAnnualYieldRate / 12) * (1 - withholdingRate) : null
+  const freshRateGpiq = gpiqAnnualYieldRate > 0 ? (gpiqAnnualYieldRate / 12) * (1 - withholdingRate) : null
+
+  // Portfolio-weighted proportional fallback is only valid when at least one
+  // leg has a real book value (bG > 0 || bQ > 0); when both are 0 this fallback
+  // would incorrectly attribute 100 % of existing cash flow to the new purchase.
+  const canUsePortfolioFallback = bG > 0 || bQ > 0
+
   let fromGpix = 0
   if (xG > 0) {
     if (bG > 0 && Number.isFinite(gpixMonthlyAfterTax)) {
+      // Best: use actual yield-on-book rate from existing holdings.
       fromGpix = (gpixMonthlyAfterTax / bG) * xG
-    } else if (totalM > 0) {
-      // bG = 0 but bQ > 0: use portfolio-weighted proportional rate
+    } else if (freshRateGpix !== null) {
+      // Fresh-buy: no book value — use stored annual yield rate.
+      fromGpix = freshRateGpix * xG
+    } else if (canUsePortfolioFallback && totalM > 0) {
+      // One leg has book data, other doesn't — use portfolio-weighted rate.
       fromGpix = (totalM * xG) / denom
     }
   }
@@ -119,8 +136,9 @@ export function extraMonthlyAfterTaxSeparate(params: {
   if (xQ > 0) {
     if (bQ > 0 && Number.isFinite(gpiqMonthlyAfterTax)) {
       fromGpiq = (gpiqMonthlyAfterTax / bQ) * xQ
-    } else if (totalM > 0) {
-      // bQ = 0 but bG > 0: use portfolio-weighted proportional rate
+    } else if (freshRateGpiq !== null) {
+      fromGpiq = freshRateGpiq * xQ
+    } else if (canUsePortfolioFallback && totalM > 0) {
       fromGpiq = (totalM * xQ) / denom
     }
   }

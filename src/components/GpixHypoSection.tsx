@@ -107,12 +107,18 @@ type Props = {
   gpixGpiqMonthlyAfterTax: number
   gpixBookKrw: number
   gpiqBookKrw: number
+  gpixAnnualYieldRate: number
+  gpiqAnnualYieldRate: number
+  etfWithholdingRate: number
 }
 
 export function GpixHypoSection({
   gpixGpiqMonthlyAfterTax,
   gpixBookKrw,
   gpiqBookKrw,
+  gpixAnnualYieldRate,
+  gpiqAnnualYieldRate,
+  etfWithholdingRate,
 }: Props) {
   const [etf, setEtf] = useState<EtfPricesPayload | null>(null)
   const [priceFailed, setPriceFailed] = useState(false)
@@ -245,8 +251,11 @@ export function GpixHypoSection({
         gpiqBookKrw,
         extraGpixKrw: hypo.extraGpixKrw,
         extraGpiqKrw: hypo.extraGpiqKrw,
+        gpixAnnualYieldRate,
+        gpiqAnnualYieldRate,
+        withholdingRate: etfWithholdingRate,
       }),
-    [splitMonthly, gpixBookKrw, gpiqBookKrw, hypo, gpixGpiqMonthlyAfterTax],
+    [splitMonthly, gpixBookKrw, gpiqBookKrw, hypo, gpixGpiqMonthlyAfterTax, gpixAnnualYieldRate, gpiqAnnualYieldRate, etfWithholdingRate],
   )
 
   const marginalGpix = useMemo(
@@ -322,9 +331,9 @@ export function GpixHypoSection({
   const monthlyYieldOnBasis =
     yieldBasisKrw > 0 && highlightKrw >= 0 ? highlightKrw / yieldBasisKrw : null
 
-  const bothBooksEmpty = gpixBookKrw <= 0 && gpiqBookKrw <= 0
-  const needsBookMsg = activeBuy && gpixGpiqMonthlyAfterTax > 0 && bothBooksEmpty
-  const showYieldCard = activeBuy && gpixGpiqMonthlyAfterTax > 0 && !needsBookMsg
+  // Yield card is shown whenever there is an active buy — the calc now works with
+  // annual yield rate fallback even when no existing holdings/book value is set.
+  const showYieldCard = activeBuy
   const usesProportionalGpix =
     hypo.extraGpixKrw > 0 && gpixBookKrw <= 0 && gpiqBookKrw > 0 && gpixGpiqMonthlyAfterTax > 0
   const usesProportionalGpiq =
@@ -704,13 +713,6 @@ export function GpixHypoSection({
           {needsMonthlyMsg && (
             <p className="hypo-calc__warn">
               위에서 <strong>세후 월 현금흐름 (GPIX+GPIQ 합계)</strong>를 먼저 입력해야 월 세후 수익을 볼 수 있습니다.
-            </p>
-          )}
-
-          {needsBookMsg && (
-            <p className="hypo-calc__warn">
-              GPIX·GPIQ <strong>장부 금액</strong>을 입력해야 추가 매수분 수익을 계산할 수 있습니다.
-              장부가 없으면 수익률을 알 수 없습니다.
             </p>
           )}
 

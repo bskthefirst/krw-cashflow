@@ -120,7 +120,33 @@ describe('extraMonthlyAfterTaxSeparate', () => {
     expect(r.total).toBeCloseTo(r.fromGpix + r.fromGpiq, 8)
   })
 
-  it('both books zero: returns 0 — cannot estimate yield without any book value', () => {
+  it('both books zero with annual rates: uses fresh-buy fallback rate', () => {
+    const split = monthlyCashSplitByBook({
+      totalMonthlyAfterTax: 8000,
+      gpixBookKrw: 0,
+      gpiqBookKrw: 0,
+    })
+    const r = extraMonthlyAfterTaxSeparate({
+      portfolioMonthlyAfterTax: 8000,
+      gpixMonthlyAfterTax: split.gpixMonthlyAfterTax,
+      gpiqMonthlyAfterTax: split.gpiqMonthlyAfterTax,
+      gpixBookKrw: 0,
+      gpiqBookKrw: 0,
+      extraGpixKrw: 3_000_000,
+      extraGpiqKrw: 1_000_000,
+      gpixAnnualYieldRate: 0.0748,
+      gpiqAnnualYieldRate: 0.0892,
+      withholdingRate: 0.154,
+    })
+    // Fresh-buy: (annualRate / 12) × (1 − 0.154) × extraKrw
+    const expectedGpix = (0.0748 / 12) * (1 - 0.154) * 3_000_000
+    const expectedGpiq = (0.0892 / 12) * (1 - 0.154) * 1_000_000
+    expect(r.fromGpix).toBeCloseTo(expectedGpix, 4)
+    expect(r.fromGpiq).toBeCloseTo(expectedGpiq, 4)
+    expect(r.total).toBeCloseTo(expectedGpix + expectedGpiq, 4)
+  })
+
+  it('both books zero, no annual rates: returns 0', () => {
     const split = monthlyCashSplitByBook({
       totalMonthlyAfterTax: 8000,
       gpixBookKrw: 0,
@@ -135,8 +161,7 @@ describe('extraMonthlyAfterTaxSeparate', () => {
       extraGpixKrw: 3_000_000,
       extraGpiqKrw: 1_000_000,
     })
-    // Without any book value we have no yield rate; returning existing monthly as
-    // "incremental" would be wrong, so the function returns zero for both legs.
+    // No book value, no annual rate supplied → cannot compute yield → 0.
     expect(r.fromGpix).toBe(0)
     expect(r.fromGpiq).toBe(0)
     expect(r.total).toBe(0)
