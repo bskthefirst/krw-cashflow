@@ -1,6 +1,7 @@
 import { MetricCard } from '../components/MetricCard'
 import { MonthlyTrend } from '../components/MonthlyTrend'
 import { usePortfolio } from '../context/usePortfolio'
+import { useTapRubberBand } from '../hooks/useTapRubberBand'
 import { animateDelayMs } from '../lib/animStyle'
 import {
   buildMonthlyProjection,
@@ -9,6 +10,45 @@ import {
   projectionTotals,
 } from '../lib/cashflow'
 import { formatKrw } from '../lib/format'
+
+function BreakdownTile(props: {
+  delayMs: number
+  ariaLabel: string
+  name: string
+  value: string
+  sub: string
+}) {
+  const { trigger, onPopEnd, tapOverlayClass, tapOverlayStyle } =
+    useTapRubberBand()
+
+  const delayStyle = animateDelayMs(props.delayMs)
+
+  return (
+    <div
+      className="breakdown-item animate__animated animate__fadeInUp animate__faster"
+      style={delayStyle}
+    >
+      <div
+        role="button"
+        tabIndex={0}
+        className={`breakdown-item__tap${tapOverlayClass ? ` ${tapOverlayClass}` : ''}`}
+        style={tapOverlayStyle}
+        aria-label={props.ariaLabel}
+        onClick={trigger}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return
+          e.preventDefault()
+          trigger()
+        }}
+        onAnimationEnd={onPopEnd}
+      >
+        <span className="breakdown-item__name">{props.name}</span>
+        <span className="breakdown-item__val">{props.value}</span>
+        <span className="breakdown-item__sub">{props.sub}</span>
+      </div>
+    </div>
+  )
+}
 
 export function DashboardPage() {
   const { inputs } = usePortfolio()
@@ -61,42 +101,27 @@ export function DashboardPage() {
           이번 달 구성
         </h2>
         <div className="breakdown-grid">
-          <div
-            className="breakdown-item animate__animated animate__fadeInUp animate__faster"
-            style={animateDelayMs(60)}
-          >
-            <span className="breakdown-item__name">CMA (월)</span>
-            <span className="breakdown-item__val">
-              {formatKrw(now.cmaPureMonthly)}
-            </span>
-            <span className="breakdown-item__sub">
-              일 {formatKrw(cmaPureDay)} · 세후
-            </span>
-          </div>
-          <div
-            className="breakdown-item animate__animated animate__fadeInUp animate__faster"
-            style={animateDelayMs(130)}
-          >
-            <span className="breakdown-item__name">ETH (월)</span>
-            <span className="breakdown-item__val">
-              {formatKrw(now.ethPureMonthly)}
-            </span>
-            <span className="breakdown-item__sub">
-              일 {formatKrw(ethPureDay)} · 세후
-            </span>
-          </div>
-          <div
-            className="breakdown-item animate__animated animate__fadeInUp animate__faster"
-            style={animateDelayMs(200)}
-          >
-            <span className="breakdown-item__name">GPIX/GPIQ (월)</span>
-            <span className="breakdown-item__val">
-              {formatKrw(now.gpixMonthly)}
-            </span>
-            <span className="breakdown-item__sub">
-              일할 {formatKrw(now.gpixPureDaily)}
-            </span>
-          </div>
+          <BreakdownTile
+            delayMs={60}
+            ariaLabel="CMA monthly pure cashflow. Tap for haptic bounce."
+            name="CMA (월)"
+            value={formatKrw(now.cmaPureMonthly)}
+            sub={`일 ${formatKrw(cmaPureDay)} · 세후`}
+          />
+          <BreakdownTile
+            delayMs={130}
+            ariaLabel="ETH staking monthly pure cashflow. Tap for haptic bounce."
+            name="ETH (월)"
+            value={formatKrw(now.ethPureMonthly)}
+            sub={`일 ${formatKrw(ethPureDay)} · 세후`}
+          />
+          <BreakdownTile
+            delayMs={200}
+            ariaLabel="GPIX GPIQ monthly pure cashflow. Tap for haptic bounce."
+            name="GPIX/GPIQ (월)"
+            value={formatKrw(now.gpixMonthly)}
+            sub={`일할 ${formatKrw(now.gpixPureDaily)}`}
+          />
         </div>
       </section>
 

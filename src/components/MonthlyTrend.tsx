@@ -2,9 +2,11 @@ import type { CSSProperties } from 'react'
 import { useCallback, useState } from 'react'
 import { animateDelayMs } from '../lib/animStyle'
 import type { MonthlyProjectionRow } from '../lib/cashflow'
-import { vibrateTap } from '../lib/haptics'
-import { getInteractionPrefs } from '../lib/interactionPrefs'
-import { playSoftTapSound } from '../lib/tapSound'
+import {
+  prefersReducedMotion,
+  TAP_POP_DURATION,
+  triggerTapPopFeedback,
+} from '../lib/tapPopFeedback'
 
 type Props = {
   rows: MonthlyProjectionRow[]
@@ -15,14 +17,6 @@ function shortTick(monthKey: string): string {
   return `${String(y).slice(2)}.${mo}`
 }
 
-function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined') return false
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
-/** Slower, smoother bar pop (Animate.css rubberBand + long duration). */
-const BAR_POP_DURATION = '2.35s'
-
 export function MonthlyTrend({ rows }: Props) {
   const max = Math.max(...rows.map((r) => r.totalPureMonthly), 1)
   const [activeBarKey, setActiveBarKey] = useState<string | null>(null)
@@ -30,9 +24,7 @@ export function MonthlyTrend({ rows }: Props) {
   const playBarPop = useCallback((monthKey: string) => {
     if (prefersReducedMotion()) return
 
-    const prefs = getInteractionPrefs()
-    if (prefs.haptics) vibrateTap()
-    if (prefs.sound) void playSoftTapSound()
+    triggerTapPopFeedback()
 
     setActiveBarKey(null)
     requestAnimationFrame(() => {
@@ -86,7 +78,7 @@ export function MonthlyTrend({ rows }: Props) {
 
               const popStyle = isPop
                 ? ({
-                    '--animate-duration': BAR_POP_DURATION,
+                    '--animate-duration': TAP_POP_DURATION,
                   } as CSSProperties)
                 : undefined
 

@@ -138,6 +138,8 @@
   );
   text-align: left;
   box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
 }
 
 .metric-card__label {
@@ -164,6 +166,23 @@
   color: var(--text-muted);
 }
 
+.metric-card__tap {
+  flex: 1;
+  display: block;
+  min-height: 0;
+  cursor: pointer;
+  border-radius: 12px;
+  outline: none;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.metric-card__tap:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline-offset: 2px;
+}
+
 .dashboard__breakdown {
   margin-bottom: 2.5rem;
 }
@@ -182,7 +201,6 @@
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
   text-align: left;
 }
 
@@ -201,6 +219,26 @@
 .breakdown-item__sub {
   font-size: 0.78rem;
   color: var(--text-muted);
+}
+
+.breakdown-item__tap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 0;
+  cursor: pointer;
+  border-radius: 12px;
+  outline: none;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.breakdown-item__tap:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline-offset: 2px;
 }
 
 .monthly-trend {

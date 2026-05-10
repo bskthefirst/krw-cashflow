@@ -25,7 +25,7 @@ export function InteractionSettings() {
         차트 막대 피드백
       </h2>
       <p className="interaction-settings__hint">
-        막대 탭 애니메이션과 함께 선택한 피드백을 줍니다 (Animate.css + 선택 기능).
+        차트 막대 · KPI 카드 · 이번 달 구성 타일 탭 시 같은 피드백이 적용됩니다.
       </p>
 
       <label className="interaction-settings__row">
