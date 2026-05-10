@@ -25,7 +25,7 @@ function BreakdownTile(props: {
 
   return (
     <div
-      className="breakdown-item animate__animated animate__fadeInUp animate__faster"
+      className="breakdown-item animate__animated animate__fadeIn animate__faster"
       style={delayStyle}
     >
       <div
@@ -59,7 +59,7 @@ export function DashboardPage() {
 
   return (
     <div className="page dashboard">
-      <header className="page__hero animate__animated animate__fadeInDown animate__faster">
+      <header className="page__hero animate__animated animate__fadeIn animate__faster">
         <h1 className="page__title">순현금 대시보드</h1>
         <p className="page__subtitle">
           이번 달 기준 세후 순현금 (KRW). 자산 입력에서 숫자를 바꾸면 즉시
@@ -96,7 +96,7 @@ export function DashboardPage() {
 
       <section className="dashboard__breakdown">
         <h2
-          className="section-title animate__animated animate__fadeInLeft animate__faster"
+          className="section-title animate__animated animate__fadeIn animate__faster"
           style={animateDelayMs(10)}
         >
           이번 달 구성

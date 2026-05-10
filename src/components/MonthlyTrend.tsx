@@ -38,7 +38,7 @@ export function MonthlyTrend({ rows }: Props) {
 
   return (
     <section className="monthly-trend" aria-labelledby="monthly-trend-heading">
-      <div className="monthly-trend__head animate__animated animate__fadeInDown animate__faster">
+      <div className="monthly-trend__head animate__animated animate__fadeIn animate__faster">
         <div>
           <h2 id="monthly-trend-heading" className="monthly-trend__title">
             24개월 순현금
@@ -53,7 +53,7 @@ export function MonthlyTrend({ rows }: Props) {
       </div>
 
       <div
-        className="monthly-trend__panel animate__animated animate__slideInUp animate__faster"
+        className="monthly-trend__panel animate__animated animate__fadeIn animate__faster"
         style={animateDelayMs(90)}
       >
         <div className="monthly-trend__y-axis" aria-hidden>
@@ -85,7 +85,7 @@ export function MonthlyTrend({ rows }: Props) {
               return (
                 <div
                   key={r.monthKey}
-                  className="monthly-trend__col animate__animated animate__fadeInUp animate__faster"
+                  className="monthly-trend__col animate__animated animate__fadeIn animate__faster"
                   style={animateDelayMs(stagger)}
                 >
                   <button

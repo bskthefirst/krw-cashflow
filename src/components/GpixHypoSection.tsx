@@ -253,16 +253,16 @@ export function GpixHypoSection({
 
   return (
     <section
-      className="hypo-section animate__animated animate__fadeInUp animate__faster"
+      className="hypo-section animate__animated animate__fadeIn animate__faster"
       style={animateDelayMs(320)}
       aria-labelledby="hypo-section-heading"
     >
       <div className="hypo-section__head">
-        <h2 id="hypo-section-heading" className="section-title hypo-section__title animate__animated animate__fadeInLeft animate__faster">
+        <h2 id="hypo-section-heading" className="section-title hypo-section__title animate__animated animate__fadeIn animate__faster">
           추가 매수 → 예상 월 세후
         </h2>
         <span
-          className="hypo-pill animate__animated animate__bounceIn animate__faster"
+          className="hypo-pill animate__animated animate__fadeIn animate__faster"
           style={animateDelayMs(90)}
           title="대시보드와 무관한 시뮬"
         >
@@ -276,7 +276,7 @@ export function GpixHypoSection({
       </p>
 
       <div
-        className="hypo-etf-bar animate__animated animate__zoomIn animate__faster"
+        className="hypo-etf-bar animate__animated animate__fadeIn animate__faster"
         style={animateDelayMs(120)}
       >
         <div className="hypo-etf-bar__head">
@@ -313,7 +313,7 @@ export function GpixHypoSection({
         <div className="hypo-etf-grid">
           {(focus === 'both' || focus === 'gpix') && (
             <div
-              className="hypo-etf-card hypo-etf-card--gpix animate__animated animate__fadeInUp animate__faster"
+              className="hypo-etf-card hypo-etf-card--gpix animate__animated animate__fadeIn animate__faster"
               style={animateDelayMs(etf ? 20 : 0)}
             >
               <div className="hypo-etf-card__sym">GPIX</div>
@@ -331,7 +331,7 @@ export function GpixHypoSection({
           )}
           {(focus === 'both' || focus === 'gpiq') && (
             <div
-              className="hypo-etf-card hypo-etf-card--gpiq animate__animated animate__fadeInUp animate__faster"
+              className="hypo-etf-card hypo-etf-card--gpiq animate__animated animate__fadeIn animate__faster"
               style={animateDelayMs(etf ? 100 : 0)}
             >
               <div className="hypo-etf-card__sym">GPIQ</div>
@@ -351,7 +351,7 @@ export function GpixHypoSection({
       </div>
 
       <div
-        className="hypo-calc hypo-calc--simple animate__animated animate__slideInUp animate__faster"
+        className="hypo-calc hypo-calc--simple animate__animated animate__fadeIn animate__faster"
         style={animateDelayMs(200)}
       >
         <div className="hypo-focus-tabs" role="tablist" aria-label="추가 매수 종목">

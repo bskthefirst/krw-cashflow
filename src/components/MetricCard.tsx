@@ -29,7 +29,7 @@ export function MetricCard({
 
   return (
     <article
-      className={`metric-card animate__animated animate__fadeInUp animate__faster${
+      className={`metric-card animate__animated animate__fadeIn animate__faster${
         variant === 'hero' ? ' metric-card--hero' : ''
       }`}
       style={delayStyle}

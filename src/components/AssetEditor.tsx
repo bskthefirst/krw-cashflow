@@ -17,7 +17,7 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
   return (
     <div className="asset-editor">
       <section
-        className="asset-editor__block animate__animated animate__fadeInUp animate__faster"
+        className="asset-editor__block animate__animated animate__fadeIn animate__faster"
         style={animateDelayMs(40)}
       >
         <h2 className="section-title">발행어음 CMA</h2>
@@ -52,7 +52,7 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
       </section>
 
       <section
-        className="asset-editor__block animate__animated animate__fadeInUp animate__faster"
+        className="asset-editor__block animate__animated animate__fadeIn animate__faster"
         style={animateDelayMs(110)}
       >
         <h2 className="section-title">ETH 스테이킹</h2>
@@ -87,7 +87,7 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
       </section>
 
       <section
-        className="asset-editor__block animate__animated animate__fadeInUp animate__faster"
+        className="asset-editor__block animate__animated animate__fadeIn animate__faster"
         style={animateDelayMs(180)}
       >
         <h2 className="section-title">GPIX / GPIQ</h2>
@@ -139,7 +139,7 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
       </section>
 
       <section
-        className="asset-editor__block animate__animated animate__fadeInUp animate__faster"
+        className="asset-editor__block animate__animated animate__fadeIn animate__faster"
         style={animateDelayMs(250)}
       >
         <h2 className="section-title">예측 시작월</h2>

@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { PortfolioProvider } from './context/PortfolioProvider'
 import { AppShell } from './components/AppShell'
 import { DashboardPage } from './pages/DashboardPage'
@@ -11,16 +12,18 @@ function routerBasename(): string | undefined {
 
 export default function App() {
   return (
-    <PortfolioProvider>
-      <BrowserRouter basename={routerBasename()}>
-        <Routes>
-          <Route element={<AppShell />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="assets" element={<AssetsPage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </PortfolioProvider>
+    <ErrorBoundary>
+      <PortfolioProvider>
+        <BrowserRouter basename={routerBasename()}>
+          <Routes>
+            <Route element={<AppShell />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="assets" element={<AssetsPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </PortfolioProvider>
+    </ErrorBoundary>
   )
 }

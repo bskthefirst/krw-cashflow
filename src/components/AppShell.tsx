@@ -10,7 +10,7 @@ export function AppShell() {
 
   return (
     <div className="app-shell">
-      <header className="app-header animate__animated animate__fadeInDown animate__faster">
+      <header className="app-header animate__animated animate__fadeIn animate__faster">
         <div className="app-header__brand">
           <span className="app-header__title">KRW Cashflow</span>
           <span className="app-header__tag">after-tax · pure</span>
@@ -35,7 +35,7 @@ export function AppShell() {
           </NavLink>
         </nav>
       </header>
-      {/* Avoid animate__fadeInUp on main — WebKit can leave content opacity:0 / translated */}
+      {/* Avoid translate-based animate.css on large surfaces — WebKit can leave opacity:0 */}
       <main className="app-main">
         <Outlet />
       </main>

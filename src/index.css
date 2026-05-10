@@ -1,7 +1,9 @@
 :root {
   color-scheme: light;
 
-  /* Animate.css — snappy but readable (respects prefers-reduced-motion in library) */
+  /* Animate.css — snappy but readable (respects prefers-reduced-motion in library).
+     Use opacity-only entrances (`fadeIn`) on pages; translate-based ones (`fadeInUp`, etc.)
+     have caused invisible UI on some WebKit builds when compositing stalls. */
   --animate-duration: 0.55s;
 
   --text: #4a4658;
