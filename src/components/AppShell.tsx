@@ -1,7 +1,12 @@
+import { useLayoutEffect } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 
 export function AppShell() {
   const { pathname } = useLocation()
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   return (
     <div className="app-shell">
@@ -30,10 +35,8 @@ export function AppShell() {
           </NavLink>
         </nav>
       </header>
-      <main
-        key={pathname}
-        className="app-main animate__animated animate__fadeInUp animate__faster"
-      >
+      {/* Avoid animate__fadeInUp on main — WebKit can leave content opacity:0 / translated */}
+      <main className="app-main">
         <Outlet />
       </main>
     </div>

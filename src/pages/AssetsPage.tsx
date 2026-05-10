@@ -1,4 +1,5 @@
 import { AssetEditor } from '../components/AssetEditor'
+import { GpixHypoSection } from '../components/GpixHypoSection'
 import { InteractionSettings } from '../components/InteractionSettings'
 import { usePortfolio } from '../context/usePortfolio'
 import { animateDelayMs } from '../lib/animStyle'
@@ -29,15 +30,24 @@ export function AssetsPage() {
       >
         <p className="assets-preview__title">미리보기</p>
         <dl className="assets-preview__dl">
-          <div>
+          <div
+            className="assets-preview__cell animate__animated animate__fadeInRight animate__faster"
+            style={animateDelayMs(90)}
+          >
             <dt>CMA 순 일당</dt>
             <dd>{formatKrw(cmaPureDay)}</dd>
           </div>
-          <div>
+          <div
+            className="assets-preview__cell animate__animated animate__fadeInRight animate__faster"
+            style={animateDelayMs(150)}
+          >
             <dt>ETH 순 일당</dt>
             <dd>{formatKrw(ethPureDay)}</dd>
           </div>
-          <div>
+          <div
+            className="assets-preview__cell animate__animated animate__fadeInRight animate__faster"
+            style={animateDelayMs(210)}
+          >
             <dt>이번 달 순현금 (합계)</dt>
             <dd>{formatKrw(preview.monthlyTotal)}</dd>
           </div>
@@ -53,7 +63,9 @@ export function AssetsPage() {
 
       <AssetEditor inputs={inputs} onChange={setInputs} onReset={reset} />
 
-      <InteractionSettings />
+      <GpixHypoSection gpixGpiqMonthlyAfterTax={inputs.gpixGpiqMonthlyAfterTax} />
+
+      <InteractionSettings style={animateDelayMs(400)} />
     </div>
   )
 }

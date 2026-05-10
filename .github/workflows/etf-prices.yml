@@ -1,0 +1,35 @@
+name: ETF spot prices
+
+on:
+  schedule:
+    # ~3× daily UTC (morning US / EU / Asia-ish refresh windows)
+    - cron: '25 1,9,17 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Fetch GPIX / GPIQ + USD/KRW
+        run: node scripts/fetch-etf-prices.mjs
+
+      - name: Commit public/etf-prices.json if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/etf-prices.json
+          if git diff --staged --quiet; then
+            echo "No price file changes."
+          else
+            git commit -m "chore: refresh ETF spot prices"
+            git push
+          fi

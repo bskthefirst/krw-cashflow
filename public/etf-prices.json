@@ -1,0 +1,21 @@
+{
+  "asOf": "2026-05-10T01:25:25.963Z",
+  "usdKrw": 1461.564549,
+  "quotes": {
+    "GPIX": {
+      "usd": 54.91,
+      "krwPerShare": 80254.50938558999
+    },
+    "GPIQ": {
+      "usd": 57.57,
+      "krwPerShare": 84142.27108593
+    }
+  },
+  "meta": {
+    "yahooSymbols": [
+      "GPIX",
+      "GPIQ"
+    ],
+    "fxSource": "open.er-api.com/v6/latest/USD"
+  }
+}

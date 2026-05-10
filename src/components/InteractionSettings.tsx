@@ -1,11 +1,13 @@
-import { useId, useState } from 'react'
+import { useId, useState, type CSSProperties } from 'react'
 import {
   getInteractionPrefs,
   setInteractionPrefs,
   type InteractionPrefs,
 } from '../lib/interactionPrefs'
 
-export function InteractionSettings() {
+type Props = { style?: CSSProperties }
+
+export function InteractionSettings({ style }: Props) {
   const baseId = useId()
   const [prefs, setPrefs] = useState<InteractionPrefs>(() =>
     getInteractionPrefs(),
@@ -18,6 +20,7 @@ export function InteractionSettings() {
 
   return (
     <section
+      style={style}
       className="interaction-settings animate__animated animate__fadeInUp animate__faster"
       aria-labelledby={`${baseId}-heading`}
     >

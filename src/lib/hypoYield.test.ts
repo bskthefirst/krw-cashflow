@@ -1,0 +1,77 @@
+import { describe, expect, it } from 'vitest'
+import {
+  extraMonthlyAfterTax,
+  extraMonthlyAfterTaxSeparate,
+  marginalMonthlyPerKrw,
+} from './hypoYield'
+
+describe('marginalMonthlyPerKrw', () => {
+  it('returns monthly / book when book > 0', () => {
+    expect(marginalMonthlyPerKrw(8500, 1_000_000)).toBeCloseTo(0.0085, 12)
+  })
+
+  it('returns null when book is zero or negative', () => {
+    expect(marginalMonthlyPerKrw(8500, 0)).toBeNull()
+    expect(marginalMonthlyPerKrw(8500, -1)).toBeNull()
+  })
+})
+
+describe('extraMonthlyAfterTax (legacy combined)', () => {
+  it('scales marginal rate by extra purchase KRW', () => {
+    const extra = extraMonthlyAfterTax({
+      monthlyAfterTaxTotal: 8500,
+      bookValueKrw: 10_000_000,
+      extraPurchaseKrw: 1_000_000,
+    })
+    expect(extra).toBeCloseTo(850, 8)
+  })
+})
+
+describe('extraMonthlyAfterTaxSeparate', () => {
+  it('computes each leg with its own yield × extra buy', () => {
+    const r = extraMonthlyAfterTaxSeparate({
+      gpixMonthlyAfterTax: 4000,
+      gpiqMonthlyAfterTax: 4500,
+      gpixBookKrw: 20_000_000,
+      gpiqBookKrw: 30_000_000,
+      extraGpixKrw: 1_000_000,
+      extraGpiqKrw: 3_000_000,
+    })
+    expect(r.fromGpix).toBeCloseTo((4000 / 20_000_000) * 1_000_000, 8)
+    expect(r.fromGpiq).toBeCloseTo((4500 / 30_000_000) * 3_000_000, 8)
+    expect(r.total).toBeCloseTo(r.fromGpix + r.fromGpiq, 8)
+  })
+
+  it('does not blend unlike yields into one marginal', () => {
+    const blendedWrong = extraMonthlyAfterTax({
+      monthlyAfterTaxTotal: 8500,
+      bookValueKrw: 50_000_000,
+      extraPurchaseKrw: 5_000_000,
+    })
+    /* Same totals (8500 / 50M / 5M) but lumpy books → separate ≠ pooled marginal */
+    const separate = extraMonthlyAfterTaxSeparate({
+      gpixMonthlyAfterTax: 6000,
+      gpiqMonthlyAfterTax: 2500,
+      gpixBookKrw: 10_000_000,
+      gpiqBookKrw: 40_000_000,
+      extraGpixKrw: 3_000_000,
+      extraGpiqKrw: 2_000_000,
+    })
+    expect(blendedWrong).toBeCloseTo(850, 4)
+    expect(separate.total).toBeCloseTo(1925, 4)
+    expect(separate.total).not.toBeCloseTo(blendedWrong!, 0)
+  })
+
+  it('treats missing book on a leg as zero incremental from that leg', () => {
+    const r = extraMonthlyAfterTaxSeparate({
+      gpixMonthlyAfterTax: 1000,
+      gpiqMonthlyAfterTax: 2000,
+      gpixBookKrw: 0,
+      gpiqBookKrw: 10_000_000,
+      extraGpixKrw: 5_000_000,
+      extraGpiqKrw: 1_000_000,
+    })
+    expect(r.fromGpix).toBe(0)
+    expect(r.fromGpiq).toBeCloseTo(200, 8)
+  })
+})
