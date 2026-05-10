@@ -322,10 +322,9 @@ export function GpixHypoSection({
   const monthlyYieldOnBasis =
     yieldBasisKrw > 0 && highlightKrw >= 0 ? highlightKrw / yieldBasisKrw : null
 
-  const showYieldCard = activeBuy && gpixGpiqMonthlyAfterTax > 0
-
   const bothBooksEmpty = gpixBookKrw <= 0 && gpiqBookKrw <= 0
   const needsBookMsg = activeBuy && gpixGpiqMonthlyAfterTax > 0 && bothBooksEmpty
+  const showYieldCard = activeBuy && gpixGpiqMonthlyAfterTax > 0 && !needsBookMsg
   const usesProportionalGpix =
     hypo.extraGpixKrw > 0 && gpixBookKrw <= 0 && gpiqBookKrw > 0 && gpixGpiqMonthlyAfterTax > 0
   const usesProportionalGpiq =
