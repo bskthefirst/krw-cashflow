@@ -166,16 +166,13 @@ export const DEFAULT_INPUTS: AssetInputs = {
   cmaTaxRate: 0.154,
   ethPretaxPerDay: 340,
   ethTaxRate: 0.1,
-  // (86_788 + 14_123) / 12 * (1 − 0.154) ≈ 7_114
-  gpixGpiqMonthlyAfterTax: 7114,
-  gpixShares: 15.31,
-  gpixPurchaseKrw: 75_782,
-  gpiqShares: 2,
-  gpiqPurchaseKrw: 79_147,
-  // 15.31 × 75_782
-  gpixBookKrw: 1_160_222,
-  // 2 × 79_147
-  gpiqBookKrw: 158_294,
+  gpixGpiqMonthlyAfterTax: 0,
+  gpixShares: 0,
+  gpixPurchaseKrw: 0,
+  gpiqShares: 0,
+  gpiqPurchaseKrw: 0,
+  gpixBookKrw: 0,
+  gpiqBookKrw: 0,
   gpixAnnualYieldRate: 0.0748,
   gpiqAnnualYieldRate: 0.0892,
   etfWithholdingRate: 0.154,

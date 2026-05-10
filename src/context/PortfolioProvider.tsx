@@ -51,16 +51,7 @@ function loadInputs(): AssetInputs {
     const derivedGpiqBook =
       gpiqShares > 0 && gpiqPurchaseKrw > 0 ? gpiqShares * gpiqPurchaseKrw : null
 
-    // One-time migration: old schema had no gpixShares/gpixPurchaseKrw fields.
-    // If those keys are absent (old save) and monthly is still the legacy placeholder 8500,
-    // replace with the actual holdings default so the hypo yield is not overstated.
-    const isOldSchema = !('gpixShares' in parsed) && !('gpixPurchaseKrw' in parsed)
-    const LEGACY_MONTHLY_PLACEHOLDER = 8500
-    const rawMonthly = fin(parsed.gpixGpiqMonthlyAfterTax, DEFAULT_INPUTS.gpixGpiqMonthlyAfterTax)
-    const gpixGpiqMonthlyAfterTax =
-      isOldSchema && rawMonthly === LEGACY_MONTHLY_PLACEHOLDER
-        ? DEFAULT_INPUTS.gpixGpiqMonthlyAfterTax
-        : rawMonthly
+    const gpixGpiqMonthlyAfterTax = fin(parsed.gpixGpiqMonthlyAfterTax, DEFAULT_INPUTS.gpixGpiqMonthlyAfterTax)
 
     const out: AssetInputs = {
       cmaPretaxPerDay: fin(parsed.cmaPretaxPerDay, DEFAULT_INPUTS.cmaPretaxPerDay),
