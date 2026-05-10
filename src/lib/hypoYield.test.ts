@@ -120,7 +120,7 @@ describe('extraMonthlyAfterTaxSeparate', () => {
     expect(r.total).toBeCloseTo(r.fromGpix + r.fromGpiq, 8)
   })
 
-  it('both books zero: extra buys split combined monthly by exposure weights', () => {
+  it('both books zero: returns 0 — cannot estimate yield without any book value', () => {
     const split = monthlyCashSplitByBook({
       totalMonthlyAfterTax: 8000,
       gpixBookKrw: 0,
@@ -135,9 +135,11 @@ describe('extraMonthlyAfterTaxSeparate', () => {
       extraGpixKrw: 3_000_000,
       extraGpiqKrw: 1_000_000,
     })
-    const denom = 4_000_000
-    expect(r.fromGpix).toBeCloseTo((8000 * 3_000_000) / denom, 8)
-    expect(r.fromGpiq).toBeCloseTo((8000 * 1_000_000) / denom, 8)
+    // Without any book value we have no yield rate; returning existing monthly as
+    // "incremental" would be wrong, so the function returns zero for both legs.
+    expect(r.fromGpix).toBe(0)
+    expect(r.fromGpiq).toBe(0)
+    expect(r.total).toBe(0)
   })
 
   it('ignores negative extra buy (clamped to zero)', () => {

@@ -324,10 +324,12 @@ export function GpixHypoSection({
 
   const showYieldCard = activeBuy && gpixGpiqMonthlyAfterTax > 0
 
+  const bothBooksEmpty = gpixBookKrw <= 0 && gpiqBookKrw <= 0
+  const needsBookMsg = activeBuy && gpixGpiqMonthlyAfterTax > 0 && bothBooksEmpty
   const usesProportionalGpix =
-    hypo.extraGpixKrw > 0 && gpixBookKrw <= 0 && gpixGpiqMonthlyAfterTax > 0
+    hypo.extraGpixKrw > 0 && gpixBookKrw <= 0 && gpiqBookKrw > 0 && gpixGpiqMonthlyAfterTax > 0
   const usesProportionalGpiq =
-    hypo.extraGpiqKrw > 0 && gpiqBookKrw <= 0 && gpixGpiqMonthlyAfterTax > 0
+    hypo.extraGpiqKrw > 0 && gpiqBookKrw <= 0 && gpixBookKrw > 0 && gpixGpiqMonthlyAfterTax > 0
 
   const bothForecastBreak = useMemo(() => {
     const parts: string[] = []
@@ -703,6 +705,13 @@ export function GpixHypoSection({
           {needsMonthlyMsg && (
             <p className="hypo-calc__warn">
               위에서 <strong>세후 월 현금흐름 (GPIX+GPIQ 합계)</strong>를 먼저 입력해야 월 세후 수익을 볼 수 있습니다.
+            </p>
+          )}
+
+          {needsBookMsg && (
+            <p className="hypo-calc__warn">
+              GPIX·GPIQ <strong>장부 금액</strong>을 입력해야 추가 매수분 수익을 계산할 수 있습니다.
+              장부가 없으면 수익률을 알 수 없습니다.
             </p>
           )}
 
