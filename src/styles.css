@@ -754,6 +754,46 @@
   margin-top: 0.35rem;
 }
 
+.hypo-focus-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.1rem;
+}
+
+.hypo-focus-tabs__btn {
+  padding: 0.45rem 0.85rem;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hypo-focus-tabs__btn[aria-selected='true'] {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.hypo-focus-tabs__btn:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline-offset: 2px;
+}
+
+.hypo-calc__hint-rule {
+  margin: 0 0 1rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--accent-bg) 65%, var(--surface));
+  border: 1px dashed color-mix(in oklab, var(--accent-border) 70%, var(--border));
+  max-width: 36rem;
+}
+
 .hypo-etf-bar__head {
   display: flex;
   align-items: center;
