@@ -15,13 +15,15 @@ export default function App() {
     <ErrorBoundary>
       <PortfolioProvider>
         <BrowserRouter basename={routerBasename()}>
-          <Routes>
-            <Route element={<AppShell />}>
-              <Route index element={<DashboardPage />} />
-              <Route path="assets" element={<AssetsPage />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route element={<AppShell />}>
+                <Route index element={<DashboardPage />} />
+                <Route path="assets" element={<AssetsPage />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </ErrorBoundary>
         </BrowserRouter>
       </PortfolioProvider>
     </ErrorBoundary>

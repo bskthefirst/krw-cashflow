@@ -12,7 +12,7 @@ import {
   marginalMonthlyPerKrw,
   monthlyCashSplitByBook,
 } from '../lib/hypoYield'
-import { formatKrw } from '../lib/format'
+import { formatKrw, formatPercent } from '../lib/format'
 
 const HYPO_STORAGE_KEY_V2 = 'krw-cashflow-hypo-v2'
 const HYPO_STORAGE_KEY_V1 = 'krw-cashflow-hypo-v1'
@@ -194,8 +194,6 @@ export function GpixHypoSection({
     localStorage.setItem(HYPO_STORAGE_KEY_V2, JSON.stringify(hypo))
   }, [hypo])
 
-  const extraTotal = hypo.extraGpixKrw + hypo.extraGpiqKrw
-
   const separateExtra = useMemo(
     () =>
       extraMonthlyAfterTaxSeparate({
@@ -228,43 +226,53 @@ export function GpixHypoSection({
   const extraGpiqShares =
     gpiq && gpiq.krwPerShare > 0 ? hypo.extraGpiqKrw / gpiq.krwPerShare : null
 
-  const hasBookForExtra =
-    (hypo.extraGpixKrw > 0 && gpixBookKrw > 0) ||
-    (hypo.extraGpiqKrw > 0 && gpiqBookKrw > 0)
-
   const highlightKrw = useMemo(() => {
     if (focus === 'gpix') return separateExtra.fromGpix
     if (focus === 'gpiq') return separateExtra.fromGpiq
     return separateExtra.total
   }, [focus, separateExtra.fromGpix, separateExtra.fromGpiq, separateExtra.total])
 
-  const showHighlight =
-    highlightKrw > 0 &&
-    ((focus === 'gpix' && hypo.extraGpixKrw > 0 && gpixBookKrw > 0) ||
-      (focus === 'gpiq' && hypo.extraGpiqKrw > 0 && gpiqBookKrw > 0) ||
-      (focus === 'both' && extraTotal > 0 && hasBookForExtra))
+  const activeBuy =
+    focus === 'gpix'
+      ? hypo.extraGpixKrw > 0
+      : focus === 'gpiq'
+        ? hypo.extraGpiqKrw > 0
+        : hypo.extraGpixKrw > 0 || hypo.extraGpiqKrw > 0
+
+  const yieldBasisKrw =
+    focus === 'gpix'
+      ? hypo.extraGpixKrw
+      : focus === 'gpiq'
+        ? hypo.extraGpiqKrw
+        : hypo.extraGpixKrw + hypo.extraGpiqKrw
+
+  const monthlyYieldOnBasis =
+    yieldBasisKrw > 0 && highlightKrw >= 0 ? highlightKrw / yieldBasisKrw : null
+
+  const showYieldCard = activeBuy && gpixGpiqMonthlyAfterTax > 0
+
+  const usesProportionalGpix =
+    hypo.extraGpixKrw > 0 && gpixBookKrw <= 0 && gpixGpiqMonthlyAfterTax > 0
+  const usesProportionalGpiq =
+    hypo.extraGpiqKrw > 0 && gpiqBookKrw <= 0 && gpixGpiqMonthlyAfterTax > 0
 
   const bothForecastBreak = useMemo(() => {
     const parts: string[] = []
-    if (hypo.extraGpixKrw > 0 && gpixBookKrw > 0) {
-      parts.push(`GPIX +${formatKrw(Math.round(separateExtra.fromGpix))}`)
+    if (hypo.extraGpixKrw > 0) {
+      parts.push(`GPIX +${formatKrw(Math.round(separateExtra.fromGpix))}/월`)
     }
-    if (hypo.extraGpiqKrw > 0 && gpiqBookKrw > 0) {
-      parts.push(`GPIQ +${formatKrw(Math.round(separateExtra.fromGpiq))}`)
+    if (hypo.extraGpiqKrw > 0) {
+      parts.push(`GPIQ +${formatKrw(Math.round(separateExtra.fromGpiq))}/월`)
     }
     return parts.join(' · ')
   }, [
     hypo.extraGpixKrw,
     hypo.extraGpiqKrw,
-    gpixBookKrw,
-    gpiqBookKrw,
     separateExtra.fromGpix,
     separateExtra.fromGpiq,
   ])
 
-  const needsBookMsg =
-    (showGpix && hypo.extraGpixKrw > 0 && gpixBookKrw <= 0) ||
-    (showGpiq && hypo.extraGpiqKrw > 0 && gpiqBookKrw <= 0)
+  const needsMonthlyMsg = activeBuy && gpixGpiqMonthlyAfterTax <= 0
 
   function setExtraGpixFromShares(shares: number) {
     const px = etf?.quotes?.GPIX
@@ -283,10 +291,11 @@ export function GpixHypoSection({
   return (
     <section className="hypo-section" aria-labelledby="hypo-section-heading">
       <h2 id="hypo-section-heading" className="hypo-section__title">
-        추가 매수 · 예상 월 세후
+        GPIX / GPIQ · 추가 매수 월 세후 수익
       </h2>
       <p className="hypo-section__note">
-        월 세후·장부는 위 입력 기준. 대시보드는 그대로입니다.
+        주 또는 KRW로 추가 매수를 넣으면, 그만큼의 <strong>월 세후 현금흐름</strong>과{' '}
+        <strong>월 수익률</strong>을 보여 줍니다. (위 «세후 월 현금흐름» 합계 필요)
       </p>
 
       <div className="hypo-prices">
@@ -375,6 +384,88 @@ export function GpixHypoSection({
           </button>
         </div>
 
+        <h3 className="hypo-calc__buy-heading">추가 주</h3>
+        {showGpix && (
+          <label className="field hypo-field">
+            <span>GPIX</span>
+            <div className="hypo-field__row">
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step="any"
+                placeholder={gpix ? `주당 ${formatKrw(gpix.krwPerShare, 0)}` : '시세 로딩 후 입력'}
+                value={gpixSharesDraft}
+                onChange={(e) => {
+                  const raw = e.target.value
+                  setGpixSharesDraft(raw)
+                  const v = num(raw)
+                  if (raw === '' || v === 0) {
+                    setHypo((h) => ({ ...h, extraGpixKrw: 0 }))
+                    return
+                  }
+                  if (gpix && gpix.krwPerShare > 0) {
+                    setExtraGpixFromShares(v)
+                  }
+                }}
+              />
+              {gpix && gpix.krwPerShare > 0 && (
+                <button
+                  type="button"
+                  className="btn btn--ghost hypo-field__chip"
+                  onClick={() => {
+                    const next = (num(gpixSharesDraft) > 0 ? num(gpixSharesDraft) : 0) + 1
+                    setGpixSharesDraft(String(next))
+                    setExtraGpixFromShares(next)
+                  }}
+                >
+                  +1주
+                </button>
+              )}
+            </div>
+          </label>
+        )}
+        {showGpiq && (
+          <label className="field hypo-field">
+            <span>GPIQ</span>
+            <div className="hypo-field__row">
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step="any"
+                placeholder={gpiq ? `주당 ${formatKrw(gpiq.krwPerShare, 0)}` : '시세 로딩 후 입력'}
+                value={gpiqSharesDraft}
+                onChange={(e) => {
+                  const raw = e.target.value
+                  setGpiqSharesDraft(raw)
+                  const v = num(raw)
+                  if (raw === '' || v === 0) {
+                    setHypo((h) => ({ ...h, extraGpiqKrw: 0 }))
+                    return
+                  }
+                  if (gpiq && gpiq.krwPerShare > 0) {
+                    setExtraGpiqFromShares(v)
+                  }
+                }}
+              />
+              {gpiq && gpiq.krwPerShare > 0 && (
+                <button
+                  type="button"
+                  className="btn btn--ghost hypo-field__chip"
+                  onClick={() => {
+                    const next = (num(gpiqSharesDraft) > 0 ? num(gpiqSharesDraft) : 0) + 1
+                    setGpiqSharesDraft(String(next))
+                    setExtraGpiqFromShares(next)
+                  }}
+                >
+                  +1주
+                </button>
+              )}
+            </div>
+          </label>
+        )}
+
         <details className="hypo-calc__details">
           <summary className="hypo-calc__details-sum">월 세후·장부 분배</summary>
           <p className="hypo-calc__details-body">
@@ -392,7 +483,7 @@ export function GpixHypoSection({
           </p>
         </details>
 
-        <h3 className="hypo-calc__buy-heading">추가 매수</h3>
+        <h3 className="hypo-calc__buy-heading">금액 (KRW, 선택)</h3>
 
         {showGpix && (
           <label className="field hypo-field">
@@ -428,11 +519,6 @@ export function GpixHypoSection({
                 </button>
               )}
             </div>
-            {hypo.extraGpixKrw > 0 && gpixBookKrw <= 0 && (
-              <small className="field__meta hypo-calc__field-warn">
-                위 «GPIX 매수·장부 금액»을 넣어야 예측이 나옵니다.
-              </small>
-            )}
             {extraGpixShares !== null && hypo.extraGpixKrw > 0 && (
               <small className="field__meta">≈ {extraGpixShares.toFixed(3)} 주 (참고 시세)</small>
             )}
@@ -473,81 +559,25 @@ export function GpixHypoSection({
                 </button>
               )}
             </div>
-            {hypo.extraGpiqKrw > 0 && gpiqBookKrw <= 0 && (
-              <small className="field__meta hypo-calc__field-warn">
-                위 «GPIQ 매수·장부 금액»을 넣어야 예측이 나옵니다.
-              </small>
-            )}
             {extraGpiqShares !== null && hypo.extraGpiqKrw > 0 && (
               <small className="field__meta">≈ {extraGpiqShares.toFixed(3)} 주 (참고 시세)</small>
             )}
           </label>
         )}
 
-        <details className="hypo-calc__details hypo-calc__details--sub">
-          <summary className="hypo-calc__details-sum">주 단위 (선택)</summary>
-          {showGpix && (
-            <label className="field hypo-field">
-              <span>GPIX 추가 주 수</span>
-              <input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                step="any"
-                placeholder={gpix ? `참고 주당 ${formatKrw(gpix.krwPerShare, 0)}` : ''}
-                value={gpixSharesDraft}
-                onChange={(e) => {
-                  const raw = e.target.value
-                  setGpixSharesDraft(raw)
-                  const v = num(raw)
-                  if (raw === '' || v === 0) {
-                    setHypo((h) => ({ ...h, extraGpixKrw: 0 }))
-                    return
-                  }
-                  if (gpix && gpix.krwPerShare > 0) {
-                    setExtraGpixFromShares(v)
-                  }
-                }}
-              />
-            </label>
-          )}
-          {showGpiq && (
-            <label className="field hypo-field">
-              <span>GPIQ 추가 주 수</span>
-              <input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                step="any"
-                placeholder={gpiq ? `참고 주당 ${formatKrw(gpiq.krwPerShare, 0)}` : ''}
-                value={gpiqSharesDraft}
-                onChange={(e) => {
-                  const raw = e.target.value
-                  setGpiqSharesDraft(raw)
-                  const v = num(raw)
-                  if (raw === '' || v === 0) {
-                    setHypo((h) => ({ ...h, extraGpiqKrw: 0 }))
-                    return
-                  }
-                  if (gpiq && gpiq.krwPerShare > 0) {
-                    setExtraGpiqFromShares(v)
-                  }
-                }}
-              />
-            </label>
-          )}
-        </details>
-
-        <div className="hypo-calc__result hypo-calc__result--forecast">
-          {needsBookMsg && (
+        <div
+          className="hypo-calc__result hypo-calc__result--forecast"
+          aria-live="polite"
+        >
+          {needsMonthlyMsg && (
             <p className="hypo-calc__warn">
-              위 GPIX/GPIQ 블록에 매수·장부 금액이 있어야 예측이 나옵니다.
+              위에서 <strong>세후 월 현금흐름 (GPIX+GPIQ 합계)</strong>를 먼저 입력해야 월 세후 수익을 볼 수 있습니다.
             </p>
           )}
 
-          {showHighlight && (
+          {showYieldCard && (
             <div className="hypo-calc__forecast-card">
-              <p className="hypo-calc__forecast-label">예상 월 세후 증가</p>
+              <p className="hypo-calc__forecast-label">추가 매수분 · 월 세후 현금 (세후)</p>
               <p className="hypo-calc__forecast-value">
                 {focus === 'both' ? (
                   <>
@@ -555,32 +585,36 @@ export function GpixHypoSection({
                       <span className="hypo-calc__forecast-break">{bothForecastBreak}</span>
                     ) : null}
                     <span className="hypo-calc__forecast-total">
-                      합계 <strong>{formatKrw(Math.round(separateExtra.total))}</strong>
+                      합계{' '}
+                      <strong>{formatKrw(Math.round(separateExtra.total))}</strong>
+                      <span className="hypo-calc__per-unit"> /월</span>
                     </span>
                   </>
                 ) : (
-                  <strong>{formatKrw(Math.round(highlightKrw))}</strong>
+                  <>
+                    <strong>{formatKrw(Math.round(highlightKrw))}</strong>
+                    <span className="hypo-calc__per-unit"> /월</span>
+                  </>
                 )}
               </p>
+              {monthlyYieldOnBasis !== null && monthlyYieldOnBasis >= 0 && (
+                <p className="hypo-calc__yield-rate">
+                  추가분 대비 월 수익률 (세후): <strong>{formatPercent(monthlyYieldOnBasis)}</strong>
+                </p>
+              )}
+              {(usesProportionalGpix || usesProportionalGpiq) && (
+                <p className="hypo-calc__muted hypo-calc__fineprint">
+                  장부가 비어 있는 종목은 월 세후를 (기존 장부+추가매수) 비율로 나눠 계산합니다.
+                </p>
+              )}
             </div>
           )}
 
-          {((focus === 'both' && extraTotal > 0) ||
-            (focus === 'gpix' && hypo.extraGpixKrw > 0) ||
-            (focus === 'gpiq' && hypo.extraGpiqKrw > 0)) &&
-            !hasBookForExtra && (
-              <p className="hypo-calc__muted hypo-calc__hint-nudge">
-                위에서 해당 종목 매수·장부 금액을 채우세요.
-              </p>
-            )}
-
-          {((focus === 'both' && extraTotal <= 0 && (gpixBookKrw > 0 || gpiqBookKrw > 0)) ||
-            (focus === 'gpix' && hypo.extraGpixKrw <= 0 && gpixBookKrw > 0) ||
-            (focus === 'gpiq' && hypo.extraGpiqKrw <= 0 && gpiqBookKrw > 0)) && (
-              <p className="hypo-calc__muted hypo-calc__hint-nudge">
-                더 살 금액을 입력하면 예측이 표시됩니다.
-              </p>
-            )}
+          {gpixGpiqMonthlyAfterTax > 0 && !activeBuy && (
+            <p className="hypo-calc__muted hypo-calc__hint-nudge">
+              추가 주 또는 금액을 입력하면 월 세후 수익이 표시됩니다.
+            </p>
+          )}
 
           <details className="hypo-calc__details hypo-calc__details--sub">
             <summary className="hypo-calc__details-sum">효율</summary>

@@ -85,7 +85,7 @@ describe('extraMonthlyAfterTaxSeparate', () => {
     expect(separate.total).not.toBeCloseTo(blendedWrong!, 0)
   })
 
-  it('treats missing book on a leg as zero incremental from that leg', () => {
+  it('when book is zero on a leg, allocates portfolio monthly by size (books + extras)', () => {
     const r = extraMonthlyAfterTaxSeparate({
       gpixMonthlyAfterTax: 1000,
       gpiqMonthlyAfterTax: 2000,
@@ -94,8 +94,30 @@ describe('extraMonthlyAfterTaxSeparate', () => {
       extraGpixKrw: 5_000_000,
       extraGpiqKrw: 1_000_000,
     })
-    expect(r.fromGpix).toBe(0)
+    const totalM = 3000
+    const denom = 10_000_000 + 5_000_000 + 1_000_000
+    expect(r.fromGpix).toBeCloseTo((totalM * 5_000_000) / denom, 8)
     expect(r.fromGpiq).toBeCloseTo(200, 8)
+    expect(r.total).toBeCloseTo(r.fromGpix + r.fromGpiq, 8)
+  })
+
+  it('both books zero: extra buys split combined monthly by exposure weights', () => {
+    const split = monthlyCashSplitByBook({
+      totalMonthlyAfterTax: 8000,
+      gpixBookKrw: 0,
+      gpiqBookKrw: 0,
+    })
+    const r = extraMonthlyAfterTaxSeparate({
+      gpixMonthlyAfterTax: split.gpixMonthlyAfterTax,
+      gpiqMonthlyAfterTax: split.gpiqMonthlyAfterTax,
+      gpixBookKrw: 0,
+      gpiqBookKrw: 0,
+      extraGpixKrw: 3_000_000,
+      extraGpiqKrw: 1_000_000,
+    })
+    const denom = 4_000_000
+    expect(r.fromGpix).toBeCloseTo((8000 * 3_000_000) / denom, 8)
+    expect(r.fromGpiq).toBeCloseTo((8000 * 1_000_000) / denom, 8)
   })
 
   it('ignores negative extra buy (clamped to zero)', () => {

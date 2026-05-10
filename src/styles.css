@@ -1027,6 +1027,39 @@
   font-size: 0.95em;
 }
 
+.hypo-calc__per-unit {
+  font-size: 0.75em;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.hypo-calc__yield-rate {
+  margin: 0.65rem 0 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.hypo-calc__yield-rate strong {
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.hypo-calc__fineprint {
+  margin: 0.55rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.hypo-section,
+.hypo-calc__forecast-card {
+  color: var(--text);
+}
+
+.hypo-calc__forecast-value,
+.hypo-calc__forecast-value strong {
+  color: var(--text-h);
+}
+
 .hypo-calc__line {
   margin: 0 0 0.45rem;
   font-size: 0.82rem;
