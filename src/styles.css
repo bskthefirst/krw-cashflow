@@ -513,33 +513,397 @@
   text-align: center;
 }
 
-.assets-page .asset-editor {
-  margin-top: 1.5rem;
+/* --------------------------------------------------------------------------
+   Assets page — “treasury ledger”: warm paper, serif titles, stacked glass cards
+   -------------------------------------------------------------------------- */
+
+.assets-page {
+  position: relative;
+  z-index: 0;
+  font-family:
+    'Plus Jakarta Sans',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
 }
 
-.assets-preview {
-  padding: 1rem 1.15rem;
-  border-radius: 12px;
-  border: 1px dashed var(--accent-border);
-  background: var(--accent-bg);
-  margin-bottom: 1.5rem;
+.assets-page .page__title,
+.assets-page .section-title,
+.assets-page .hypo-section__title,
+.assets-page .assets-page__panel-title,
+.assets-page .interaction-settings__title {
+  font-family:
+    'Fraunces',
+    'Georgia',
+    'Times New Roman',
+    serif;
+  font-optical-sizing: auto;
+}
+
+.assets-page__bg {
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+  top: -1.75rem;
+  left: 50%;
+  width: min(1200px, calc(100% + 3rem));
+  height: min(520px, 58vh);
+  transform: translateX(-50%);
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 12% 8%,
+      color-mix(in oklab, #3d8b7a 16%, transparent) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 88% 18%,
+      color-mix(in oklab, #c9a227 14%, transparent) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 80% 50% at 50% 100%,
+      color-mix(in oklab, var(--accent) 9%, transparent) 0%,
+      transparent 60%
+    );
+  opacity: 0.95;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .assets-page__bg {
+    animation: assets-page-bg-drift 18s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes assets-page-bg-drift {
+  0% {
+    filter: hue-rotate(-4deg);
+    transform: translateX(-50%) scale(1);
+  }
+  100% {
+    filter: hue-rotate(6deg);
+    transform: translateX(-50%) scale(1.03);
+  }
+}
+
+.assets-page__hero {
+  margin-bottom: 1.75rem;
+}
+
+.assets-page__kicker {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--accent) 55%, var(--text-muted));
+}
+
+.assets-page__columns {
+  display: grid;
+  gap: 1.35rem;
+  align-items: start;
+}
+
+@media (min-width: 1060px) {
+  .assets-page__columns {
+    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.12fr);
+    gap: 1.5rem;
+  }
+}
+
+.assets-page__panel {
+  position: relative;
+  padding: 1.35rem 1.35rem 1.5rem;
+  border-radius: 1.35rem;
+  border: 1px solid color-mix(in oklab, var(--border) 78%, var(--accent) 8%);
+  background: linear-gradient(
+    155deg,
+    color-mix(in oklab, var(--surface) 92%, var(--bg-elevated)) 0%,
+    color-mix(in oklab, var(--surface) 98%, transparent) 48%,
+    color-mix(in oklab, var(--surface) 88%, var(--accent-bg)) 100%
+  );
+  box-shadow:
+    var(--shadow-card),
+    0 0 0 1px color-mix(in oklab, white 55%, transparent) inset;
+  backdrop-filter: blur(10px);
   text-align: left;
 }
 
+.assets-page__panel--sim {
+  border-color: color-mix(in oklab, var(--border) 70%, #3d8b7a 22%);
+  background: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--surface) 94%, #e8f5f2) 0%,
+    color-mix(in oklab, var(--surface) 99%, transparent) 55%,
+    color-mix(in oklab, var(--surface) 90%, var(--accent-bg)) 100%
+  );
+}
+
+.assets-page__panel--prefs {
+  margin-top: 1.35rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.assets-page__panel--prefs .interaction-settings {
+  margin-top: 0;
+  border-radius: 1.35rem;
+  border: 1px solid color-mix(in oklab, var(--border) 85%, var(--accent) 6%);
+  background: linear-gradient(
+    165deg,
+    color-mix(in oklab, var(--surface) 94%, var(--surface-2)) 0%,
+    color-mix(in oklab, var(--surface) 96%, var(--accent-bg)) 100%
+  );
+  box-shadow: var(--shadow-sm);
+  padding: 1.35rem 1.4rem 1.4rem;
+}
+
+.assets-page .interaction-settings__title {
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text-h);
+}
+
+.assets-page__panel-head {
+  margin-bottom: 1.1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 65%, transparent);
+}
+
+.assets-page__panel-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text-h);
+}
+
+.assets-page__panel-desc {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  max-width: 38rem;
+}
+
+.assets-page__panel .asset-editor {
+  margin-top: 0;
+}
+
+.assets-page__panel--editor .field {
+  max-width: 24rem;
+}
+
+.assets-page__panel--editor .field input {
+  border-radius: 11px;
+  border-color: color-mix(in oklab, var(--border) 88%, var(--accent) 7%);
+  background: color-mix(in oklab, var(--surface) 96%, var(--bg-elevated));
+  box-shadow: 0 1px 0 color-mix(in oklab, white 80%, transparent) inset;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.assets-page__panel--editor .field input:focus {
+  border-color: color-mix(in oklab, var(--accent) 42%, var(--border));
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--accent) 20%, transparent),
+    0 1px 0 color-mix(in oklab, white 80%, transparent) inset;
+}
+
+.assets-page .asset-editor__sub-title {
+  color: color-mix(in oklab, var(--text-h) 88%, var(--accent) 12%);
+}
+
+.assets-page .btn {
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.assets-page .asset-editor__block {
+  border-bottom-color: color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.assets-page .asset-editor__block:last-of-type {
+  padding-bottom: 0.15rem;
+}
+
+.assets-page .hypo-section {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.assets-page .hypo-section__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: var(--text-h);
+  margin-bottom: 0.5rem;
+}
+
+.assets-page .hypo-section__note {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  max-width: 40rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--surface) 82%, #e8f5f2);
+  border: 1px solid color-mix(in oklab, var(--border) 75%, #3d8b7a 14%);
+}
+
+.assets-page .hypo-prices {
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--surface) 88%, var(--surface-2));
+  border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+}
+
+.assets-page .hypo-focus-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  padding: 0.25rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--surface-2) 88%, var(--surface));
+  box-shadow: 0 1px 0 color-mix(in oklab, white 70%, transparent) inset;
+}
+
+.assets-page .hypo-focus-tabs__btn {
+  margin-bottom: 0;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  border: none;
+  border-bottom: none;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.assets-page .hypo-focus-tabs__btn:hover {
+  color: var(--text-h);
+  background: color-mix(in oklab, var(--surface) 70%, transparent);
+}
+
+.assets-page .hypo-focus-tabs__btn[aria-selected='true'] {
+  color: var(--text-h);
+  font-weight: 600;
+  background: var(--surface);
+  box-shadow:
+    0 1px 3px rgba(22, 18, 35, 0.08),
+    0 0 0 1px color-mix(in oklab, var(--border) 55%, transparent);
+}
+
+.assets-page .hypo-calc__buy-heading {
+  margin-top: 1.1rem;
+  letter-spacing: 0.08em;
+  color: color-mix(in oklab, var(--text-muted) 90%, #3d8b7a 10%);
+}
+
+.assets-page .hypo-calc__forecast-card {
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(
+    125deg,
+    color-mix(in oklab, var(--accent-bg) 55%, var(--surface)) 0%,
+    color-mix(in oklab, #e8f5f2 35%, var(--surface)) 100%
+  );
+  border: 1px solid color-mix(in oklab, var(--accent-border) 45%, var(--border));
+  box-shadow: var(--shadow-sm);
+}
+
+.assets-page .hypo-field__row > input {
+  border-radius: 11px;
+}
+
+.assets-page .assets-page__panel--sim .hypo-field__chip {
+  border-radius: 999px;
+  border-color: color-mix(in oklab, var(--border) 75%, #3d8b7a 18%);
+  background: color-mix(in oklab, var(--surface) 90%, #e8f5f2);
+}
+
+.assets-page .hypo-prices__refresh {
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.assets-preview {
+  position: relative;
+  padding: 1.15rem 1.25rem 1.2rem;
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in oklab, var(--accent-border) 65%, var(--border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--accent-bg) 75%, var(--surface)) 0%,
+    color-mix(in oklab, var(--surface) 94%, var(--bg-elevated)) 100%
+  );
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+  text-align: left;
+  overflow: hidden;
+}
+
+.assets-preview::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(40%, 180px);
+  height: 100%;
+  background: radial-gradient(
+    circle at 100% 0%,
+    color-mix(in oklab, var(--accent-soft) 12%, transparent) 0%,
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
 .assets-preview__title {
+  position: relative;
+  z-index: 1;
   margin: 0 0 0.65rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-family:
+    'Fraunces',
+    'Georgia',
+    serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
   color: var(--text-h);
 }
 
 .assets-preview__dl {
+  position: relative;
+  z-index: 1;
   margin: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 0.75rem;
+}
+
+.assets-preview__cell {
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--surface) 82%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.assets-preview__cell--highlight {
+  background: color-mix(in oklab, var(--surface) 70%, var(--accent-bg));
+  border-color: color-mix(in oklab, var(--accent-border) 55%, var(--border));
 }
 
 .assets-preview__dl dt {
@@ -556,6 +920,8 @@
 }
 
 .assets-preview__fine {
+  position: relative;
+  z-index: 1;
   margin: 0.85rem 0 0;
   font-size: 0.78rem;
   color: var(--text-muted);
