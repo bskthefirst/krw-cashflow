@@ -11,11 +11,19 @@ export type AssetInputs = {
   /** ETH staking pretax KRW per day */
   ethPretaxPerDay: number
   ethTaxRate: number
-  /** GPIX/GPIQ total monthly after-tax KRW (control cell) */
+  /** GPIX/GPIQ total monthly after-tax KRW (control cell — actual received) */
   gpixGpiqMonthlyAfterTax: number
-  /** GPIX only: cost / book basis in KRW (for yield-on-book sim; optional) */
+  /** GPIX current holdings (주수). gpixBookKrw is derived from shares × 구매가 when both > 0. */
+  gpixShares: number
+  /** GPIX purchase price per share (구매가, KRW) */
+  gpixPurchaseKrw: number
+  /** GPIQ current holdings (주수) */
+  gpiqShares: number
+  /** GPIQ purchase price per share (구매가, KRW) */
+  gpiqPurchaseKrw: number
+  /** GPIX cost/book basis KRW — auto-derived from gpixShares × gpixPurchaseKrw; editable directly if shares/price not set */
   gpixBookKrw: number
-  /** GPIQ only: cost / book basis in KRW (for yield-on-book sim; optional) */
+  /** GPIQ cost/book basis KRW — auto-derived from gpiqShares × gpiqPurchaseKrw */
   gpiqBookKrw: number
   /** First day of month (YYYY-MM-DD) — anchors the 24-month projection */
   forecastStartMonth: string
@@ -152,8 +160,15 @@ export const DEFAULT_INPUTS: AssetInputs = {
   cmaTaxRate: 0.154,
   ethPretaxPerDay: 340,
   ethTaxRate: 0.1,
-  gpixGpiqMonthlyAfterTax: 8500,
-  gpixBookKrw: 0,
-  gpiqBookKrw: 0,
+  // (86_788 + 14_123) / 12 * (1 − 0.154) ≈ 7_114
+  gpixGpiqMonthlyAfterTax: 7114,
+  gpixShares: 15.31,
+  gpixPurchaseKrw: 75_782,
+  gpiqShares: 2,
+  gpiqPurchaseKrw: 79_147,
+  // 15.31 × 75_782
+  gpixBookKrw: 1_160_222,
+  // 2 × 79_147
+  gpiqBookKrw: 158_294,
   forecastStartMonth: '2026-05-01',
 }

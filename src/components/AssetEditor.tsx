@@ -1,5 +1,5 @@
 import type { AssetInputs } from '../lib/cashflow'
-import { formatPercent } from '../lib/format'
+import { formatKrw, formatPercent } from '../lib/format'
 
 type Props = {
   inputs: AssetInputs
@@ -82,10 +82,74 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
       <section className="asset-editor__block">
         <h2 className="section-title">GPIX / GPIQ</h2>
         <p className="asset-editor__note">
-          월 세후 합계와 종목별 장부. 아래 예측은 이 숫자만 사용합니다.
+          현재 보유 주수·구매가를 입력하면 장부 금액이 자동 계산됩니다. 월 세후 현금흐름은 실제 수령 금액을 직접 입력하세요.
         </p>
+
+        <h3 className="asset-editor__sub-title">GPIX</h3>
         <label className="field">
-          <span>세후 월 현금흐름 (KRW)</span>
+          <span>보유 주수 (주)</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={0.01}
+            value={inputs.gpixShares}
+            onChange={(e) =>
+              onChange({ gpixShares: num(e.target.value) })
+            }
+          />
+        </label>
+        <label className="field">
+          <span>구매가 (1주당 KRW)</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={1}
+            value={inputs.gpixPurchaseKrw}
+            onChange={(e) =>
+              onChange({ gpixPurchaseKrw: num(e.target.value) })
+            }
+          />
+          <small className="field__meta">
+            장부 금액 (자동): {formatKrw(inputs.gpixBookKrw)}
+          </small>
+        </label>
+
+        <h3 className="asset-editor__sub-title">GPIQ</h3>
+        <label className="field">
+          <span>보유 주수 (주)</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={0.01}
+            value={inputs.gpiqShares}
+            onChange={(e) =>
+              onChange({ gpiqShares: num(e.target.value) })
+            }
+          />
+        </label>
+        <label className="field">
+          <span>구매가 (1주당 KRW)</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={1}
+            value={inputs.gpiqPurchaseKrw}
+            onChange={(e) =>
+              onChange({ gpiqPurchaseKrw: num(e.target.value) })
+            }
+          />
+          <small className="field__meta">
+            장부 금액 (자동): {formatKrw(inputs.gpiqBookKrw)}
+          </small>
+        </label>
+
+        <h3 className="asset-editor__sub-title">월 현금흐름</h3>
+        <label className="field">
+          <span>세후 월 현금흐름 합계 (KRW)</span>
           <input
             type="number"
             inputMode="decimal"
@@ -96,33 +160,8 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
               onChange({ gpixGpiqMonthlyAfterTax: num(e.target.value) })
             }
           />
-        </label>
-        <label className="field">
-          <span>GPIX 매수·장부 금액 (KRW)</span>
-          <input
-            type="number"
-            inputMode="decimal"
-            min={0}
-            step={10000}
-            value={inputs.gpixBookKrw}
-            onChange={(e) => onChange({ gpixBookKrw: num(e.target.value) })}
-          />
           <small className="field__meta">
-            그 종목에 묶여 있는 금액(보통 매수 원금·증권 앱 표시). 월 세후 ÷ 이 금액으로 비율을 냅니다.
-          </small>
-        </label>
-        <label className="field">
-          <span>GPIQ 매수·장부 금액 (KRW)</span>
-          <input
-            type="number"
-            inputMode="decimal"
-            min={0}
-            step={10000}
-            value={inputs.gpiqBookKrw}
-            onChange={(e) => onChange({ gpiqBookKrw: num(e.target.value) })}
-          />
-          <small className="field__meta">
-            GPIX와 별도입니다. 시뮬의 장부 입력은 모두 여기서만 바뀝니다.
+            증권사 월배당 실수령액. 연배당 ÷ 12 × (1 − 15.4%) 로 추산 가능.
           </small>
         </label>
       </section>

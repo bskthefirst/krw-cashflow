@@ -637,6 +637,14 @@
   max-width: 36rem;
 }
 
+.asset-editor__sub-title {
+  margin: 1.1rem 0 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-h);
+  letter-spacing: 0.01em;
+}
+
 .field {
   display: flex;
   flex-direction: column;

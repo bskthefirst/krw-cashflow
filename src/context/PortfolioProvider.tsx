@@ -33,30 +33,36 @@ function loadInputs(): AssetInputs {
       typeof parsed.gpiqBookKrw === 'number' && Number.isFinite(parsed.gpiqBookKrw)
         ? parsed.gpiqBookKrw
         : DEFAULT_INPUTS.gpiqBookKrw
+    // gpixBookKrw / gpiqBookKrw above are the raw stored values; they may be
+    // overridden below by the derived shares × 구매가 values.
+
+    function fin(v: unknown, fallback: number): number {
+      return typeof v === 'number' && Number.isFinite(v) ? v : fallback
+    }
+
+    const gpixShares = fin(parsed.gpixShares, DEFAULT_INPUTS.gpixShares)
+    const gpixPurchaseKrw = fin(parsed.gpixPurchaseKrw, DEFAULT_INPUTS.gpixPurchaseKrw)
+    const gpiqShares = fin(parsed.gpiqShares, DEFAULT_INPUTS.gpiqShares)
+    const gpiqPurchaseKrw = fin(parsed.gpiqPurchaseKrw, DEFAULT_INPUTS.gpiqPurchaseKrw)
+
+    // Derive book KRW from shares × 구매가 when both are set; otherwise fall back to stored value.
+    const derivedGpixBook =
+      gpixShares > 0 && gpixPurchaseKrw > 0 ? gpixShares * gpixPurchaseKrw : null
+    const derivedGpiqBook =
+      gpiqShares > 0 && gpiqPurchaseKrw > 0 ? gpiqShares * gpiqPurchaseKrw : null
 
     const out: AssetInputs = {
-      cmaPretaxPerDay:
-        typeof parsed.cmaPretaxPerDay === 'number'
-          ? parsed.cmaPretaxPerDay
-          : DEFAULT_INPUTS.cmaPretaxPerDay,
-      cmaTaxRate:
-        typeof parsed.cmaTaxRate === 'number'
-          ? parsed.cmaTaxRate
-          : DEFAULT_INPUTS.cmaTaxRate,
-      ethPretaxPerDay:
-        typeof parsed.ethPretaxPerDay === 'number'
-          ? parsed.ethPretaxPerDay
-          : DEFAULT_INPUTS.ethPretaxPerDay,
-      ethTaxRate:
-        typeof parsed.ethTaxRate === 'number'
-          ? parsed.ethTaxRate
-          : DEFAULT_INPUTS.ethTaxRate,
-      gpixGpiqMonthlyAfterTax:
-        typeof parsed.gpixGpiqMonthlyAfterTax === 'number'
-          ? parsed.gpixGpiqMonthlyAfterTax
-          : DEFAULT_INPUTS.gpixGpiqMonthlyAfterTax,
-      gpixBookKrw,
-      gpiqBookKrw,
+      cmaPretaxPerDay: fin(parsed.cmaPretaxPerDay, DEFAULT_INPUTS.cmaPretaxPerDay),
+      cmaTaxRate: fin(parsed.cmaTaxRate, DEFAULT_INPUTS.cmaTaxRate),
+      ethPretaxPerDay: fin(parsed.ethPretaxPerDay, DEFAULT_INPUTS.ethPretaxPerDay),
+      ethTaxRate: fin(parsed.ethTaxRate, DEFAULT_INPUTS.ethTaxRate),
+      gpixGpiqMonthlyAfterTax: fin(parsed.gpixGpiqMonthlyAfterTax, DEFAULT_INPUTS.gpixGpiqMonthlyAfterTax),
+      gpixShares,
+      gpixPurchaseKrw,
+      gpiqShares,
+      gpiqPurchaseKrw,
+      gpixBookKrw: derivedGpixBook ?? gpixBookKrw,
+      gpiqBookKrw: derivedGpiqBook ?? gpiqBookKrw,
       forecastStartMonth:
         typeof parsed.forecastStartMonth === 'string' &&
         /^\d{4}-\d{2}-01$/.test(parsed.forecastStartMonth)
@@ -101,7 +107,21 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   }, [inputs])
 
   const setInputs = useCallback((patch: Partial<AssetInputs>) => {
-    setInputsState((prev) => ({ ...prev, ...patch }))
+    setInputsState((prev) => {
+      const next = { ...prev, ...patch }
+      // Auto-derive book KRW from shares × 구매가 whenever either changes.
+      if ('gpixShares' in patch || 'gpixPurchaseKrw' in patch) {
+        if (next.gpixShares > 0 && next.gpixPurchaseKrw > 0) {
+          next.gpixBookKrw = next.gpixShares * next.gpixPurchaseKrw
+        }
+      }
+      if ('gpiqShares' in patch || 'gpiqPurchaseKrw' in patch) {
+        if (next.gpiqShares > 0 && next.gpiqPurchaseKrw > 0) {
+          next.gpiqBookKrw = next.gpiqShares * next.gpiqPurchaseKrw
+        }
+      }
+      return next
+    })
   }, [])
 
   const reset = useCallback(() => {

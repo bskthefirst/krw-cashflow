@@ -29,7 +29,7 @@ describe('monthly totals', () => {
     expect(row.daysInMonth).toBe(31)
     expect(row.cmaPureMonthly).toBeCloseTo(cmaPureDay * 31, 6)
     expect(row.ethPureMonthly).toBeCloseTo(ethPureDay * 31, 6)
-    expect(row.gpixMonthly).toBe(8500)
+    expect(row.gpixMonthly).toBe(DEFAULT_INPUTS.gpixGpiqMonthlyAfterTax)
     expect(row.totalPureMonthly).toBeCloseTo(
       row.cmaPureMonthly + row.ethPureMonthly + row.gpixMonthly,
       6,
@@ -65,7 +65,7 @@ describe('currentMonthMetrics', () => {
     const asOf = new Date(2026, 4, 15) // May 2026 local
     const m = currentMonthMetrics(DEFAULT_INPUTS, asOf)
     expect(m.daysInMonth).toBe(31)
-    expect(m.gpixPureDaily).toBeCloseTo(8500 / 31, 8)
+    expect(m.gpixPureDaily).toBeCloseTo(DEFAULT_INPUTS.gpixGpiqMonthlyAfterTax / 31, 8)
     expect(m.totalPureDaily).toBeCloseTo(
       m.cmaPureDaily + m.ethPureDaily + m.gpixPureDaily,
       8,
