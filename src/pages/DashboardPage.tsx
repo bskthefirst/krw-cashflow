@@ -69,6 +69,7 @@ export function DashboardPage() {
 
       <section className="dashboard__kpis">
         <MetricCard
+          variant="hero"
           label="이번 달 순현금 (월)"
           value={formatKrw(now.monthlyTotal)}
           hint={`${now.daysInMonth}일 기준`}

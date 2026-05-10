@@ -8,6 +8,8 @@ type Props = {
   hint?: string
   /** Stagger entrance animation (ms). Uses Animate.css `--animate-delay`. */
   delayMs?: number
+  /** Strong purple styling for the primary KPI. */
+  variant?: 'default' | 'hero'
   children?: ReactNode
 }
 
@@ -16,6 +18,7 @@ export function MetricCard({
   value,
   hint,
   delayMs = 0,
+  variant = 'default',
   children,
 }: Props) {
   const { trigger, onPopEnd, tapOverlayClass, tapOverlayStyle } =
@@ -26,8 +29,11 @@ export function MetricCard({
 
   return (
     <article
-      className="metric-card animate__animated animate__fadeInUp animate__faster"
+      className={`metric-card animate__animated animate__fadeInUp animate__faster${
+        variant === 'hero' ? ' metric-card--hero' : ''
+      }`}
       style={delayStyle}
+      data-kpi={variant === 'hero' ? 'primary' : undefined}
     >
       <div
         role="button"
