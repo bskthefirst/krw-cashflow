@@ -3,7 +3,30 @@ import {
   extraMonthlyAfterTax,
   extraMonthlyAfterTaxSeparate,
   marginalMonthlyPerKrw,
+  monthlyCashSplitByBook,
 } from './hypoYield'
+
+describe('monthlyCashSplitByBook', () => {
+  it('splits by book weights', () => {
+    const s = monthlyCashSplitByBook({
+      totalMonthlyAfterTax: 10000,
+      gpixBookKrw: 30_000_000,
+      gpiqBookKrw: 70_000_000,
+    })
+    expect(s.gpixMonthlyAfterTax).toBeCloseTo(3000, 6)
+    expect(s.gpiqMonthlyAfterTax).toBeCloseTo(7000, 6)
+  })
+
+  it('uses 50/50 when both books are zero', () => {
+    const s = monthlyCashSplitByBook({
+      totalMonthlyAfterTax: 8000,
+      gpixBookKrw: 0,
+      gpiqBookKrw: 0,
+    })
+    expect(s.gpixMonthlyAfterTax).toBe(4000)
+    expect(s.gpiqMonthlyAfterTax).toBe(4000)
+  })
+})
 
 describe('marginalMonthlyPerKrw', () => {
   it('returns monthly / book when book > 0', () => {

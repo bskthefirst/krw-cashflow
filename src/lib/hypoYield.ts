@@ -3,6 +3,30 @@
  * GPIX and GPIQ are modeled separately — each leg uses its own 월 세후 ÷ 장부 ratio.
  */
 
+/**
+ * Split combined monthly after-tax across tickers by book-weight (same units as the portfolio row).
+ * If both books are 0, falls back to 50/50 for attribution only.
+ */
+export function monthlyCashSplitByBook(params: {
+  totalMonthlyAfterTax: number
+  gpixBookKrw: number
+  gpiqBookKrw: number
+}): { gpixMonthlyAfterTax: number; gpiqMonthlyAfterTax: number } {
+  const { totalMonthlyAfterTax, gpixBookKrw, gpiqBookKrw } = params
+  if (!Number.isFinite(totalMonthlyAfterTax) || totalMonthlyAfterTax <= 0) {
+    return { gpixMonthlyAfterTax: 0, gpiqMonthlyAfterTax: 0 }
+  }
+  const sumBook = gpixBookKrw + gpiqBookKrw
+  if (!(sumBook > 0)) {
+    const half = totalMonthlyAfterTax / 2
+    return { gpixMonthlyAfterTax: half, gpiqMonthlyAfterTax: half }
+  }
+  return {
+    gpixMonthlyAfterTax: totalMonthlyAfterTax * (gpixBookKrw / sumBook),
+    gpiqMonthlyAfterTax: totalMonthlyAfterTax * (gpiqBookKrw / sumBook),
+  }
+}
+
 export function marginalMonthlyPerKrw(monthlyAfterTax: number, bookValueKrw: number): number | null {
   if (!(bookValueKrw > 0) || !Number.isFinite(bookValueKrw)) {
     return null
