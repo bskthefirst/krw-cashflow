@@ -1,5 +1,4 @@
 import type { AssetInputs } from '../lib/cashflow'
-import { animateDelayMs } from '../lib/animStyle'
 import { formatPercent } from '../lib/format'
 
 type Props = {
@@ -16,10 +15,7 @@ function num(v: string): number {
 export function AssetEditor({ inputs, onChange, onReset }: Props) {
   return (
     <div className="asset-editor">
-      <section
-        className="asset-editor__block animate__animated animate__fadeIn animate__faster"
-        style={animateDelayMs(40)}
-      >
+      <section className="asset-editor__block">
         <h2 className="section-title">발행어음 CMA</h2>
         <label className="field">
           <span>세전 일당 (KRW)</span>
@@ -51,10 +47,7 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
         </label>
       </section>
 
-      <section
-        className="asset-editor__block animate__animated animate__fadeIn animate__faster"
-        style={animateDelayMs(110)}
-      >
+      <section className="asset-editor__block">
         <h2 className="section-title">ETH 스테이킹</h2>
         <label className="field">
           <span>세전 일당 (KRW)</span>
@@ -86,14 +79,10 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
         </label>
       </section>
 
-      <section
-        className="asset-editor__block animate__animated animate__fadeIn animate__faster"
-        style={animateDelayMs(180)}
-      >
+      <section className="asset-editor__block">
         <h2 className="section-title">GPIX / GPIQ</h2>
         <p className="asset-editor__note">
-          세후 월별 순현금 <strong>합계</strong>와, 종목별 <strong>매수·장부 금액</strong>을
-          여기서 같이 둡니다. 아래 시뮬은 이 장부 금액을 그대로 씁니다.
+          월 세후 합계와 종목별 장부. 아래 예측은 이 숫자만 사용합니다.
         </p>
         <label className="field">
           <span>세후 월 현금흐름 (KRW)</span>
@@ -138,10 +127,7 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
         </label>
       </section>
 
-      <section
-        className="asset-editor__block animate__animated animate__fadeIn animate__faster"
-        style={animateDelayMs(250)}
-      >
+      <section className="asset-editor__block">
         <h2 className="section-title">예측 시작월</h2>
         <label className="field">
           <span>24개월 차트 시작 (매월 1일)</span>
@@ -157,10 +143,7 @@ export function AssetEditor({ inputs, onChange, onReset }: Props) {
         </label>
       </section>
 
-      <div
-        className="asset-editor__actions animate__animated animate__fadeIn animate__faster"
-        style={animateDelayMs(320)}
-      >
+      <div className="asset-editor__actions">
         <button type="button" className="btn btn--ghost" onClick={onReset}>
           기본값으로 초기화
         </button>

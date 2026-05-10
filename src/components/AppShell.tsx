@@ -10,7 +10,7 @@ export function AppShell() {
 
   return (
     <div className="app-shell">
-      <header className="app-header animate__animated animate__fadeIn animate__faster">
+      <header className="app-header">
         <div className="app-header__brand">
           <span className="app-header__title">KRW Cashflow</span>
           <span className="app-header__tag">after-tax · pure</span>

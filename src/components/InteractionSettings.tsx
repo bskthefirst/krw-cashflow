@@ -21,7 +21,7 @@ export function InteractionSettings({ style }: Props) {
   return (
     <section
       style={style}
-      className="interaction-settings animate__animated animate__fadeIn animate__faster"
+      className="interaction-settings"
       aria-labelledby={`${baseId}-heading`}
     >
       <h2 id={`${baseId}-heading`} className="interaction-settings__title">

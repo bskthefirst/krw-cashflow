@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { animateDelayMs } from '../lib/animStyle'
 import { loadEtfPrices, type EtfPricesPayload } from '../lib/etfPrices'
 import {
   extraMonthlyAfterTaxSeparate,
@@ -245,8 +244,6 @@ export function GpixHypoSection({
       (focus === 'gpiq' && hypo.extraGpiqKrw > 0 && gpiqBookKrw > 0) ||
       (focus === 'both' && extraTotal > 0 && hasBookForExtra))
 
-  const highlightRef = useRef<HTMLParagraphElement>(null)
-
   const bothForecastBreak = useMemo(() => {
     const parts: string[] = []
     if (hypo.extraGpixKrw > 0 && gpixBookKrw > 0) {
@@ -264,18 +261,6 @@ export function GpixHypoSection({
     separateExtra.fromGpix,
     separateExtra.fromGpiq,
   ])
-
-  useLayoutEffect(() => {
-    const el = highlightRef.current
-    if (!el || !showHighlight) {
-      return
-    }
-    el.classList.remove('hypo-calc__forecast-value--pop')
-    requestAnimationFrame(() => {
-      void el.offsetWidth
-      el.classList.add('hypo-calc__forecast-value--pop')
-    })
-  }, [highlightKrw, showHighlight])
 
   const needsBookMsg =
     (showGpix && hypo.extraGpixKrw > 0 && gpixBookKrw <= 0) ||
@@ -296,108 +281,70 @@ export function GpixHypoSection({
   const sumBook = gpixBookKrw + gpiqBookKrw
 
   return (
-    <section
-      className="hypo-section animate__animated animate__fadeIn animate__faster"
-      style={animateDelayMs(320)}
-      aria-labelledby="hypo-section-heading"
-    >
-      <div className="hypo-section__head">
-        <h2 id="hypo-section-heading" className="section-title hypo-section__title animate__animated animate__fadeIn animate__faster">
-          추가 매수 → 예상 월 세후
-        </h2>
-        <span
-          className="hypo-pill animate__animated animate__fadeIn animate__faster"
-          style={animateDelayMs(90)}
-          title="대시보드와 무관한 시뮬"
-        >
-          시뮬
-        </span>
-      </div>
-
-      <p className="asset-editor__note hypo-section__note animate__animated animate__fadeIn animate__faster" style={animateDelayMs(40)}>
-        <strong>여기서는 추가 매수만</strong> 넣습니다. 월 세후는 위 «세후 월 현금흐름» 합계를, 종목 나눔은 위 «매수·장부 금액» 비율로{' '}
-        <strong>자동 적용</strong>합니다. 대시보드 숫자는 바뀌지 않습니다.
+    <section className="hypo-section" aria-labelledby="hypo-section-heading">
+      <h2 id="hypo-section-heading" className="hypo-section__title">
+        추가 매수 · 예상 월 세후
+      </h2>
+      <p className="hypo-section__note">
+        월 세후·장부는 위 입력 기준. 대시보드는 그대로입니다.
       </p>
 
-      <div
-        className="hypo-etf-bar animate__animated animate__fadeIn animate__faster"
-        style={animateDelayMs(120)}
-      >
-        <div className="hypo-etf-bar__head">
-          <span className="hypo-etf-bar__label">참고 시세</span>
+      <div className="hypo-prices">
+        <div className="hypo-prices__toolbar">
+          <span className="hypo-prices__caption">참고 시세</span>
           <button
             type="button"
-            className="btn btn--ghost hypo-etf-bar__btn hypo-etf-bar__btn--bounce"
+            className="btn btn--ghost hypo-prices__refresh"
             onClick={() => void refreshPrices()}
             disabled={refreshing}
             aria-busy={refreshing}
-            aria-label={refreshing ? '시세 새로고침 중' : '참고 시세 새로고침'}
           >
-            <span
-              className={`hypo-refresh-icon${refreshing ? ' hypo-refresh-icon--spin' : ''}`}
-              aria-hidden
-            >
-              ↻
-            </span>
-            <span className="hypo-etf-bar__btn-text">{refreshing ? '불러오는 중…' : '새로고침'}</span>
+            {refreshing ? '갱신 중' : '갱신'}
           </button>
         </div>
+        <div className="hypo-prices__list">
+          {(focus === 'both' || focus === 'gpix') && (
+            <span className="hypo-prices__sym">
+              GPIX{' '}
+              {gpix ? (
+                <>
+                  {formatKrw(gpix.krwPerShare, 0)}
+                  <span className="hypo-prices__usd"> {formatUsd(gpix.usd)}</span>
+                </>
+              ) : (
+                <span className="hypo-prices__pending">—</span>
+              )}
+            </span>
+          )}
+          {focus === 'both' && <span className="hypo-prices__sep">·</span>}
+          {(focus === 'both' || focus === 'gpiq') && (
+            <span className="hypo-prices__sym">
+              GPIQ{' '}
+              {gpiq ? (
+                <>
+                  {formatKrw(gpiq.krwPerShare, 0)}
+                  <span className="hypo-prices__usd"> {formatUsd(gpiq.usd)}</span>
+                </>
+              ) : (
+                <span className="hypo-prices__pending">—</span>
+              )}
+            </span>
+          )}
+        </div>
         {etf && (
-          <p className="hypo-etf-bar__meta animate__animated animate__fadeIn animate__faster">
-            USD/KRW {etf.usdKrw.toFixed(2)} · 갱신 {formatAsOf(etf.asOf)}
+          <p className="hypo-prices__meta">
+            USD/KRW {etf.usdKrw.toFixed(0)} · {formatAsOf(etf.asOf)}
           </p>
         )}
         {priceFailed && (
-          <p className="hypo-etf-bar__warn animate__animated animate__headShake animate__faster" role="alert">
-            시세 파일을 불러오지 못했습니다. 로컬에서는{' '}
-            <code className="hypo-inline-code">npm run fetch-etf-prices</code> 로{' '}
-            <code className="hypo-inline-code">public/etf-prices.json</code> 을 만든 뒤 다시 시도하세요.
+          <p className="hypo-prices__warn" role="alert">
+            시세를 불러오지 못했습니다. 로컬:{' '}
+            <code className="hypo-inline-code">npm run fetch-etf-prices</code>
           </p>
         )}
-        <div className="hypo-etf-grid">
-          {(focus === 'both' || focus === 'gpix') && (
-            <div
-              className="hypo-etf-card hypo-etf-card--gpix animate__animated animate__fadeIn animate__faster"
-              style={animateDelayMs(etf ? 20 : 0)}
-            >
-              <div className="hypo-etf-card__sym">GPIX</div>
-              {gpix ? (
-                <>
-                  <div className="hypo-etf-card__price">{formatKrw(gpix.krwPerShare, 0)}</div>
-                  <div className="hypo-etf-card__sub">{formatUsd(gpix.usd)} · 주당</div>
-                </>
-              ) : (
-                <div className="hypo-etf-card__muted hypo-etf-card__muted--wait" aria-hidden>
-                  …
-                </div>
-              )}
-            </div>
-          )}
-          {(focus === 'both' || focus === 'gpiq') && (
-            <div
-              className="hypo-etf-card hypo-etf-card--gpiq animate__animated animate__fadeIn animate__faster"
-              style={animateDelayMs(etf ? 100 : 0)}
-            >
-              <div className="hypo-etf-card__sym">GPIQ</div>
-              {gpiq ? (
-                <>
-                  <div className="hypo-etf-card__price">{formatKrw(gpiq.krwPerShare, 0)}</div>
-                  <div className="hypo-etf-card__sub">{formatUsd(gpiq.usd)} · 주당</div>
-                </>
-              ) : (
-                <div className="hypo-etf-card__muted hypo-etf-card__muted--wait" aria-hidden>
-                  …
-                </div>
-              )}
-            </div>
-          )}
-        </div>
       </div>
 
-      <div
-        className="hypo-calc hypo-calc--simple animate__animated animate__fadeIn animate__faster"
-        style={animateDelayMs(200)}
-      >
+      <div className="hypo-calc">
         <div className="hypo-focus-tabs" role="tablist" aria-label="추가 매수 종목">
           <button
             type="button"
@@ -429,7 +376,7 @@ export function GpixHypoSection({
         </div>
 
         <details className="hypo-calc__details">
-          <summary className="hypo-calc__details-sum">월 세후·장부는 어떻게 쓰이나요?</summary>
+          <summary className="hypo-calc__details-sum">월 세후·장부 분배</summary>
           <p className="hypo-calc__details-body">
             월 세후 합계 <strong>{formatKrw(gpixGpiqMonthlyAfterTax)}</strong> 을 종목별로{' '}
             {sumBook > 0 ? (
@@ -445,7 +392,7 @@ export function GpixHypoSection({
           </p>
         </details>
 
-        <h3 className="hypo-calc__buy-heading">추가 매수 (KRW)</h3>
+        <h3 className="hypo-calc__buy-heading">추가 매수</h3>
 
         {showGpix && (
           <label className="field hypo-field">
@@ -538,7 +485,7 @@ export function GpixHypoSection({
         )}
 
         <details className="hypo-calc__details hypo-calc__details--sub">
-          <summary className="hypo-calc__details-sum">주 단위로 입력 (선택)</summary>
+          <summary className="hypo-calc__details-sum">주 단위 (선택)</summary>
           {showGpix && (
             <label className="field hypo-field">
               <span>GPIX 추가 주 수</span>
@@ -593,18 +540,15 @@ export function GpixHypoSection({
 
         <div className="hypo-calc__result hypo-calc__result--forecast">
           {needsBookMsg && (
-            <p className="hypo-calc__warn animate__animated animate__fadeIn animate__faster">
-              위 «GPIX / GPIQ» 블록에 매수·장부 금액을 넣어야 예측이 나옵니다.
+            <p className="hypo-calc__warn">
+              위 GPIX/GPIQ 블록에 매수·장부 금액이 있어야 예측이 나옵니다.
             </p>
           )}
 
           {showHighlight && (
             <div className="hypo-calc__forecast-card">
-              <p className="hypo-calc__forecast-label">예상 월 세후 증가 (추정)</p>
-              <p
-                ref={highlightRef}
-                className="hypo-calc__forecast-value hypo-calc__forecast-value--pop"
-              >
+              <p className="hypo-calc__forecast-label">예상 월 세후 증가</p>
+              <p className="hypo-calc__forecast-value">
                 {focus === 'both' ? (
                   <>
                     {bothForecastBreak ? (
@@ -639,7 +583,7 @@ export function GpixHypoSection({
             )}
 
           <details className="hypo-calc__details hypo-calc__details--sub">
-            <summary className="hypo-calc__details-sum">계산 세부 (선택)</summary>
+            <summary className="hypo-calc__details-sum">효율</summary>
             {showGpix && marginalGpix !== null && gpixBookKrw > 0 && (
               <p className="hypo-calc__line">
                 GPIX 효율: 월 세후 <strong>{marginalGpix.toFixed(6)}</strong> / 보유 KRW / 월

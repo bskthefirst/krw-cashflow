@@ -2,7 +2,6 @@ import { AssetEditor } from '../components/AssetEditor'
 import { GpixHypoSection } from '../components/GpixHypoSection'
 import { InteractionSettings } from '../components/InteractionSettings'
 import { usePortfolio } from '../context/usePortfolio'
-import { animateDelayMs } from '../lib/animStyle'
 import {
   currentMonthMetrics,
   getPureDailies,
@@ -17,37 +16,25 @@ export function AssetsPage() {
 
   return (
     <div className="page assets-page">
-      <header className="page__hero animate__animated animate__fadeIn animate__faster">
+      <header className="page__hero">
         <h1 className="page__title">자산 입력</h1>
         <p className="page__subtitle">
           스프레드시트와 동일하게 세전·세율 또는 월 세후 금액을 조정합니다.
         </p>
       </header>
 
-      <aside
-        className="assets-preview animate__animated animate__fadeIn animate__faster"
-        style={animateDelayMs(70)}
-      >
+      <aside className="assets-preview">
         <p className="assets-preview__title">미리보기</p>
         <dl className="assets-preview__dl">
-          <div
-            className="assets-preview__cell animate__animated animate__fadeIn animate__faster"
-            style={animateDelayMs(90)}
-          >
+          <div className="assets-preview__cell">
             <dt>CMA 순 일당</dt>
             <dd>{formatKrw(cmaPureDay)}</dd>
           </div>
-          <div
-            className="assets-preview__cell animate__animated animate__fadeIn animate__faster"
-            style={animateDelayMs(150)}
-          >
+          <div className="assets-preview__cell">
             <dt>ETH 순 일당</dt>
             <dd>{formatKrw(ethPureDay)}</dd>
           </div>
-          <div
-            className="assets-preview__cell animate__animated animate__fadeIn animate__faster"
-            style={animateDelayMs(210)}
-          >
+          <div className="assets-preview__cell">
             <dt>이번 달 순현금 (합계)</dt>
             <dd>{formatKrw(preview.monthlyTotal)}</dd>
           </div>
@@ -69,7 +56,7 @@ export function AssetsPage() {
         gpiqBookKrw={inputs.gpiqBookKrw}
       />
 
-      <InteractionSettings style={animateDelayMs(400)} />
+      <InteractionSettings />
     </div>
   )
 }
