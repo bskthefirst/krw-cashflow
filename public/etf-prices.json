@@ -1,14 +1,14 @@
 {
-  "asOf": "2026-09-16T20:16:49.095Z",
-  "usdKrw": 1360.361778,
+  "asOf": "2026-09-17T06:16:45.312Z",
+  "usdKrw": 1369.81121,
   "quotes": {
     "GPIX": {
       "usd": 55.06,
-      "krwPerShare": 74901.51949668
+      "krwPerShare": 75421.8052226
     },
     "GPIQ": {
       "usd": 55.72,
-      "krwPerShare": 75799.35827016
+      "krwPerShare": 76325.8806212
     }
   },
   "meta": {
